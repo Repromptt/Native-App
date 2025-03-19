@@ -3,6 +3,18 @@ import { View, Text, ScrollView, FlatList, TouchableOpacity, TextInput, Button, 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from "expo-router";
 
+
+const fetchWithSelfSignedCert = async () => {
+  try {
+    const response = await RNFetchBlob.fetch('GET', 'https://your-self-signed-server.com/api/data', {
+      trusty: true, // Trust the self-signed certificate
+    });
+    console.log(response.data);
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+};
+
 const Explore = () => {
   const [value, onChangeText] = useState('');
   const [selectedContacts, setSelectedContacts] = useState<{ id: number; name: string; phone: string }[]>([]);
@@ -24,6 +36,7 @@ const Explore = () => {
 
 
   const handleList = async () => {
+    console.log(userId);
     const expenseData = {
       userId: userId, // Ensure 'userId' is correctly referenced
       brief: value,
@@ -31,7 +44,7 @@ const Explore = () => {
     };
   
     try {
-      const response = await fetch('https://localhost:5000/add-expense', {
+      const response = await fetch('http://localhost:5000/add-expense', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -51,7 +64,7 @@ const Explore = () => {
       onChangeText('');
       setSearchQuery('');
     } catch (error) {
-      console.error('Error adding expense:');
+      console.error('Error adding expense:',error);
     }
   };
   
@@ -61,25 +74,24 @@ const Explore = () => {
   useEffect(() => {
     const fetchExpenses = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/expenses/${userId}`); // Update with your backend URL
+        const response = await fetch(`http://localhost:5000/expenses?userId=${userId}`); // Assuming your backend accepts userId as a query parameter
         const data = await response.json();
-        console.log(response);
-
+  
         if (!response.ok) {
           throw new Error(data.message || "Failed to fetch expenses");
         }
-
+  
         setExpenses(data.expenses);
       } catch (error) {
-
         Alert.alert("Error");
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchExpenses();
   }, [userId]);
+  
 
   const handleContactSelect = (contact: { id: number; name: string; phone: string }) => {
     if (selectedContacts.includes(contact)) {

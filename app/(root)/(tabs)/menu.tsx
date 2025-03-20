@@ -13,8 +13,7 @@ function menu() {
     <SafeAreaView  style={{backgroundColor: '#f2d3bd', flex: 1}} >
         <ScrollView>
               <View className='font-bold flex flex-row justify-between p-2' style={{backgroundColor: '#af8064',borderRadius:10}} >
-          <Text className='text-2xl font-rubik-medium p-3'>MENU</Text>
-          <Image source={images.icon} className='size-12'/>
+          <Text className='text-2xl font-rubik-medium p-3'>Profile</Text>
         </View>        
         
     <View>

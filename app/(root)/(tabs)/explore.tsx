@@ -2,7 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, FlatList, TouchableOpacity, TextInput, Button, Modal, Pressable, StyleSheet,Alert,ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from "expo-router";
+import { FaMoneyBill } from "react-icons/fa";
+import { SiBuymeacoffee } from "react-icons/si";
+import { MdMoreTime } from "react-icons/md";
 
+
+import { CiTimer } from "react-icons/ci";
 
 const fetchWithSelfSignedCert = async () => {
   try {
@@ -88,9 +93,14 @@ const Explore = () => {
         setLoading(false);
       }
     };
-  
-    fetchExpenses();
+
+    const intervalId = setInterval(fetchExpenses, 10000); // Refresh every 10 seconds
+
+    fetchExpenses(); // Initial fetch
+
+    return () => clearInterval(intervalId); // Cleanup interval on component unmount
   }, [userId]);
+  
   
 
   const handleContactSelect = (contact: { id: number; name: string; phone: string }) => {
@@ -107,95 +117,172 @@ const Explore = () => {
 
   return (
     <SafeAreaView style={{ backgroundColor: '#f2d3bd', flex: 1 }}>
-      <ScrollView>
-        <View style={{ backgroundColor: '#af8064', padding: 10 }}>
-          <Text style={{ fontSize: 24, fontWeight: 'bold' }}>Home</Text>
-        </View>
+    <ScrollView>
+      <View style={{ backgroundColor: '#af8064', padding: 10 }}>
+        <Text style={{ fontSize: 24, fontWeight: 'bold' }}>Home</Text>
+      </View>
 
-        
-
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={() => setModalVisible(!modalVisible)}
-        >
-          <View style={styles.modalView}>
-            <Text style={styles.modalText}>Brief about Expense</Text>
-            <TextInput
-              editable
-              multiline
-              numberOfLines={4}
-              maxLength={100}
-              onChangeText={text => onChangeText(text)}
-              value={value}
-              style={styles.modalInput}
-            />
-            <FlatList
-  data={selectedContacts}
-  horizontal={true}
-  renderItem={({ item }) => (
-    <View key={item.id} style={styles.contactItem}>
-      <Text style={styles.contactName}>{item.name}</Text>
-    </View>
-  )}
-  keyExtractor={(item) => item.id.toString()}
-/>
-
-
-            <Text style={styles.modalText} className=''>Select Contacts to Split Bill</Text>
-            <TextInput
-              placeholder="Search Contacts"
-              style={styles.searchInput}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
-
-            {searchQuery.length > 0 && (
-              <FlatList
-                data={filteredContacts.slice(0, 2)}
-                renderItem={({ item }) => (
-                    <TouchableOpacity onPress={() => handleContactSelect(item)}>
-                    <View style={styles.contactItem}>
-                      <Text style={styles.contactName}>{item.name}</Text>
-                      {selectedContacts.some(contact => contact.id === item.id) && (
-                      <Text style={styles.selectedMarker}>Selected</Text>
-                      )}
-                    </View>
-                    </TouchableOpacity>
-                )}
-                keyExtractor={(item) => item.id.toString()}
-              />
-            )}
-
-            <View style={styles.buttonContainer}>
-              <Pressable
-                style={[styles.button, styles.buttonClose]}
-                onPress={() => setModalVisible(!modalVisible)}
-              >
-                <Text>Close</Text>
-              </Pressable>
-              <Pressable
-                style={[styles.button, styles.buttonOpen]}
-                onPress={handleList}
-              >
-                <Text >Submit</Text>
-              </Pressable>
-            </View>
-          </View>
-        </Modal>
-
-        <Pressable
-          style={[styles.button, styles.buttonOpen]}
-          onPress={() => setModalVisible(true)}
-        >
-          <Text>Show Modal</Text>
-        </Pressable>
-      </ScrollView>
-      <View style={{ flex: 1, padding: 20, backgroundColor: "#f5f5f5" }}>
-      <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 10 }}>
-        Expenses for {userId}
+      <Text style={{ fontSize: 30, fontWeight: "bold", marginBottom: 10, paddingLeft:10,padding:20 }}>
+        Welcome, {userId}
       </Text>
+
+
+
+     
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(!modalVisible)}
+      >
+        <View style={{
+          margin: 20,
+          backgroundColor: 'white',
+          borderRadius: 20,
+          padding: 35,
+          alignItems: 'center',
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.25,
+          shadowRadius: 4,
+          elevation: 5,
+        }}>
+          <Text style={{ marginBottom: 15, textAlign: 'left', fontWeight:'500', fontSize:'24px' }}>Brief about Expense</Text>
+          <TextInput
+            editable
+            multiline
+            numberOfLines={4}
+            maxLength={100}
+            onChangeText={text => onChangeText(text)}
+            value={value}
+            style={{
+              borderColor: 'gray',
+              borderWidth: 1,
+              padding: 10,
+              marginBottom: 20,
+              width: '100%',
+            }}
+          />
+          <FlatList
+            data={selectedContacts}
+            horizontal={true}
+            renderItem={({ item }) => (
+              <View key={item.id} style={{
+                padding: 10,
+                borderBottomWidth: 1,
+                borderBottomColor: 'gray',
+              }}>
+                <Text style={{ fontSize: 16 }}>{item.name}</Text>
+              </View>
+            )}
+            keyExtractor={(item) => item.id.toString()}
+          />
+
+          <Text style={{ marginBottom: 15, textAlign: 'left' }}>Select Contacts to Split Bill</Text>
+          <TextInput
+            placeholder="Search Contacts"
+            style={{
+              borderColor: 'gray',
+              borderWidth: 1,
+              padding: 10,
+              marginBottom: 10,
+              width: '100%',
+            }}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+
+          {searchQuery.length > 0 && (
+            <FlatList
+              data={filteredContacts.slice(0, 2)}
+              renderItem={({ item }) => (
+                <TouchableOpacity onPress={() => handleContactSelect(item)}>
+                  <View style={{
+                    padding: 10,
+                    borderBottomWidth: 1,
+                    borderBottomColor: 'gray',
+                  }}>
+                    <Text style={{ fontSize: 16 }}>{item.name}</Text>
+                    {selectedContacts.some(contact => contact.id === item.id) && (
+                      <Text style={{ color: 'green', fontSize: 14 }}>Selected</Text>
+                    )}
+                  </View>
+                </TouchableOpacity>
+              )}
+              keyExtractor={(item) => item.id.toString()}
+            />
+          )}
+
+          <View style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            width: '100%',
+          }}>
+            <Pressable
+              style={[
+                {
+                  borderRadius: 20,
+                  paddingHorizontal: 20,
+                  paddingVertical: 10,
+                  elevation: 2,
+                  backgroundColor: '#2196F3',
+                },
+              ]}
+              onPress={() => setModalVisible(!modalVisible)}
+            >
+              <Text>Close</Text>
+            </Pressable>
+            <Pressable
+              style={[
+                {
+                  borderRadius: 20,
+                  paddingHorizontal: 20,
+                  paddingVertical: 10,
+                  elevation: 2,
+                  backgroundColor: '#F194FF',
+                },
+              ]}
+              onPress={handleList}
+            >
+              <Text>Submit</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+
+      <Pressable
+        style={{
+          borderRadius: 20,
+          paddingHorizontal: 10,
+          paddingVertical: 10,
+          height: '15vh',
+          margin: 10,
+          elevation: 2,
+          backgroundColor: '#F194FF',
+        display: 'flex',
+        flexDirection: 'row'
+        ,justifyContent: 'center',
+        alignItems:'center'
+      }}
+
+        onPress={() => setModalVisible(true)}
+      >
+        <SiBuymeacoffee style={{fontSize: 48, fontWeight: "bold", marginBottom: 10}} />
+        <Text style={{fontSize: 24, fontWeight: "bold", marginBottom: 10}}>Add your Expense 
+        </Text>
+        
+      </Pressable>
+
+      <View style={{ flex: 1, padding: 20, backgroundColor: "#f5f5f5" }}>
+        <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center'}}>
+      <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 10 }}>
+        Recent Expenses    
+      </Text>
+      <MdMoreTime style={{ fontSize: 24, fontWeight: "bold", marginBottom: 10 }} />
+      </View>
+      
+
 
       {loading ? (
         <ActivityIndicator size="large" color="#11aadd" />
@@ -220,81 +307,22 @@ const Explore = () => {
               }}
             >
               <Text style={{ fontSize: 18, fontWeight: "bold" }}>{item.itemName}</Text>
-              <Text>Amount: ₹{item.expenseAmount}</Text>
+              <Text>total Amount: ₹{item.expenseAmount}</Text>
               <Text>Category: {item.category}</Text>
+              <Text>My Amount: {item.myexpense}</Text>
               <Text>Contacts: {item.contacts.join(", ") || "None"}</Text>
-              
+              <Text>Date: {item.createdAt ? item.createdAt.substring(0, 10) : "None"}</Text>
+
             </View>
           )}
         />
       )}
     </View>
-    </SafeAreaView>
+    </ScrollView>
+   
+  </SafeAreaView>
   );
-};
-
-const styles = StyleSheet.create({
-  modalView: {
-    margin: 20,
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 35,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  modalText: {
-    marginBottom: 15,
-    textAlign: 'center',
-  },
-  modalInput: {
-    borderColor: 'gray',
-    borderWidth: 1,
-    padding: 10,
-    marginBottom: 20,
-    width: '100%',
-  },
-  searchInput: {
-    borderColor: 'gray',
-    borderWidth: 1,
-    padding: 10,
-    marginBottom: 10,
-    width: '100%',
-  },
-  contactItem: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: 'gray',
-  },
-  contactName: {
-    fontSize: 16,
-  },
-  selectedMarker: {
-    color: 'green',
-    fontSize: 14,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-  },
-  button: {
-    borderRadius: 20,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    elevation: 2,
-  },
-  buttonOpen: {
-    backgroundColor: '#F194FF',
-  },
-  buttonClose: {
-    backgroundColor: '#2196F3',
-  },
-});
-
+}
 export default Explore;
 
 

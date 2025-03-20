@@ -35,7 +35,7 @@ export default function Index() {
         />
         <View className="flex-1 justify-end px-10 pb-[60px]">
           {/* Title */}
-          <Text className="text-8xl font-extrabold text-white mb-2">Splitkaro MVP</Text>
+          <Text className="text-6xl font-extrabold text-white mb-2">Splitkaro MVP &beta;</Text>
           <Text className="text-2xl font-rubik-extrabold mb-10 text-white">
             Track your expenses
           </Text>

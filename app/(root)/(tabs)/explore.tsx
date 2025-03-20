@@ -5,8 +5,9 @@ import { useLocalSearchParams } from "expo-router";
 import { FaMoneyBill } from "react-icons/fa";
 import { SiBuymeacoffee } from "react-icons/si";
 import { MdMoreTime } from "react-icons/md";
-
-
+import { useRouter } from "expo-router";
+import { FaArrowsSplitUpAndLeft } from "react-icons/fa6";
+import { IoIosContact } from "react-icons/io";
 import { CiTimer } from "react-icons/ci";
 
 const fetchWithSelfSignedCert = async () => {
@@ -19,6 +20,7 @@ const fetchWithSelfSignedCert = async () => {
     console.error('Error fetching data:', error);
   }
 };
+const router = useRouter();
 
 const Explore = () => {
   const [value, onChangeText] = useState('');
@@ -114,19 +116,36 @@ const Explore = () => {
   const filteredContacts = allContacts.filter(contact =>
     contact.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
+ 
   return (
     <SafeAreaView style={{ backgroundColor: '#f2d3bd', flex: 1 }}>
     <ScrollView>
-      <View style={{ backgroundColor: '#af8064', padding: 10 }}>
-        <Text style={{ fontSize: 24, fontWeight: 'bold' }}>Home</Text>
+      <View style={{ backgroundColor: '#af8064', padding: 10, display:'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Text style={{ fontSize: 24, fontWeight: 'bold' }}>Splitkaro &beta;</Text>
+        <FaArrowsSplitUpAndLeft style={{ fontSize: 24, fontWeight: 'bold' }} />
+
       </View>
+
+      <View style={{display:'flex', flexDirection:'row', justifyContent:'space-between',alignItems:'center'}}>
 
       <Text style={{ fontSize: 30, fontWeight: "bold", marginBottom: 10, paddingLeft:10,padding:20 }}>
         Welcome, {userId}
       </Text>
-
-
+      <TouchableOpacity
+      onPress={() => router.push(`/menu?userId=${userId}`)}
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "transparent",
+        padding: 10,
+        borderRadius: 8,
+      }}
+    >
+     
+      <IoIosContact style={{ fontSize: 36, color: "Black", marginLeft: 5 }} />
+     
+    </TouchableOpacity>
+      </View>
 
      
 

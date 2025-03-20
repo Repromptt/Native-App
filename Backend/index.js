@@ -186,23 +186,23 @@ app.get("/user/:userID/insights", async (req, res) => {
   
       if (!expenses.length) return res.status(200).json({ message: "No expenses found" });
   
-      // Total expense
+      
       const totalExpense = expenses.reduce((acc, e) => acc + e.expenseAmount, 0);
   
-      // Total myexpense
+     
       const totalMyExpense = expenses.reduce((acc, e) => acc + e.myexpense, 0);
   
-      // Category with highest expense
+     
       const categoryMap = {};
       expenses.forEach(e => categoryMap[e.category] = (categoryMap[e.category] || 0) + e.expenseAmount);
       const topCategory = Object.entries(categoryMap).sort((a, b) => b[1] - a[1])[0] || ["None", 0];
   
-      // Most common contact
+      
       const contactMap = {};
       expenses.forEach(e => e.contacts.forEach(c => contactMap[c] = (contactMap[c] || 0) + 1));
       const topContact = Object.entries(contactMap).sort((a, b) => b[1] - a[1])[0] || ["None", 0];
   
-      // Insight: Average expense per item
+      
       const averageExpense = (totalExpense / expenses.length).toFixed(2);
   
       res.json({
@@ -211,6 +211,7 @@ app.get("/user/:userID/insights", async (req, res) => {
         topCategory: { name: topCategory[0], amount: topCategory[1] },
         topContact: { name: topContact[0], count: topContact[1] },
         averageExpense,
+        expensescnt: expenses.length,
       });
     } catch (error) {
       res.status(500).json({ message: "Internal Server Error", error });

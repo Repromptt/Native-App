@@ -1,46 +1,48 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, FlatList, TouchableOpacity, TextInput, Button, Modal, Pressable, StyleSheet,Alert,ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, FlatList, TouchableOpacity, TextInput, Button, Modal, Pressable, StyleSheet,Alert,ActivityIndicator, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from "expo-router";
-import { FaMoneyBill } from "react-icons/fa";
-import { SiBuymeacoffee } from "react-icons/si";
-import { MdMoreTime } from "react-icons/md";
+import Entypo from '@expo/vector-icons/Entypo';
+import AntDesign from '@expo/vector-icons/AntDesign';
 import { useRouter } from "expo-router";
-import { FaArrowsSplitUpAndLeft } from "react-icons/fa6";
-import { IoIosContact } from "react-icons/io";
-import { CiTimer } from "react-icons/ci";
-
-const fetchWithSelfSignedCert = async () => {
-  try {
-    const response = await RNFetchBlob.fetch('GET', 'https://your-self-signed-server.com/api/data', {
-      trusty: true, // Trust the self-signed certificate
-    });
-    console.log(response.data);
-  } catch (error) {
-    console.error('Error fetching data:', error);
-  }
-};
-const router = useRouter();
+import Feather from '@expo/vector-icons/Feather';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import icons from "@/constants/icons";
 
 const Explore = () => {
   const [value, onChangeText] = useState('');
   const [selectedContacts, setSelectedContacts] = useState<{ id: number; name: string; phone: string }[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
+   const [expenses, setExpenses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+
+  const fetchWithSelfSignedCert = async () => {
+    try {
+      const response = await RNFetchBlob.fetch('GET', 'https://your-self-signed-server.com/api/data', {
+        trusty: true, // Trust the self-signed certificate
+      });
+      console.log(response.data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+  const router = useRouter();
 
   // Predefined contact list
   const allContacts = [
-    { id: 1, name: 'John Doe', phone: '123-456-7890' },
-    { id: 2, name: 'Jane Smith', phone: '987-654-3210' },
-    { id: 3, name: 'Alice Johnson', phone: '555-666-7777' },
-    { id: 4, name: 'Bob Brown', phone: '444-333-2222' },
-    { id: 5, name: 'John joe', phone: '123-456-7890' },
-    { id: 6, name: 'Jane james', phone: '987-654-3210' },
-    { id: 7, name: 'Alice tom', phone: '555-666-7777' },
-    { id: 8, name: 'Bob henry', phone: '444-333-2222' },
+    { id: 1, name: 'Harsh ranjan', phone: '123-456-7890' },
+    { id: 2, name: 'Satyam', phone: '987-654-3210' },
+    { id: 3, name: 'sanjay', phone: '555-666-7777' },
+    { id: 4, name: 'Om', phone: '444-333-2222' },
+    { id: 5, name: 'Souvik', phone: '123-456-7890' },
+    { id: 6, name: 'ayush', phone: '987-654-3210' },
+    { id: 7, name: 'Sneha', phone: '555-666-7777' },
+    { id: 8, name: 'Isha', phone: '444-333-2222' },
   ];
   const { userId } = useLocalSearchParams(); // Get userId from URL params
-
 
   const handleList = async () => {
     console.log(userId);
@@ -75,9 +77,7 @@ const Explore = () => {
     }
   };
   
-  const [expenses, setExpenses] = useState([]);
-  const [loading, setLoading] = useState(true);
-
+  
   useEffect(() => {
     const fetchExpenses = async () => {
       try {
@@ -118,18 +118,17 @@ const Explore = () => {
   );
  
   return (
-    <SafeAreaView style={{ backgroundColor: '#f2d3bd', flex: 1 }}>
+    <SafeAreaView style={{ backgroundColor: '#c1e8ff', flex: 1 }}>
     <ScrollView>
-      <View style={{ backgroundColor: '#af8064', padding: 10, display:'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+      <View style={{ backgroundColor: '#5483B3', padding: 10, display:'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
         <Text style={{ fontSize: 24, fontWeight: 'bold' }}>Splitkaro &beta;</Text>
-        <FaArrowsSplitUpAndLeft style={{ fontSize: 24, fontWeight: 'bold' }} />
-
+        <MaterialCommunityIcons name="set-split" size={48} color="#021024" />
       </View>
 
       <View style={{display:'flex', flexDirection:'row', justifyContent:'space-between',alignItems:'center'}}>
 
-      <Text style={{ fontSize: 30, fontWeight: "bold", marginBottom: 10, paddingLeft:10,padding:20 }}>
-        Welcome, {userId}
+      <Text style={{ fontSize: 30, fontWeight: "bold", marginBottom: 10, paddingLeft:10,padding:20,color:"#052659" }}>
+        Welcome {userId}
       </Text>
       <TouchableOpacity
       onPress={() => router.push(`/menu?userId=${userId}`)}
@@ -142,8 +141,8 @@ const Explore = () => {
       }}
     >
      
-      <IoIosContact style={{ fontSize: 36, color: "Black", marginLeft: 5 }} />
-     
+     <Image source={icons.person} style={{ width: 36, height: 36,tintColor:"#021024"}} />
+
     </TouchableOpacity>
       </View>
 
@@ -278,7 +277,7 @@ const Explore = () => {
           height: '15vh',
           margin: 10,
           elevation: 2,
-          backgroundColor: '#F194FF',
+          backgroundColor: '#5483B3',
         display: 'flex',
         flexDirection: 'row'
         ,justifyContent: 'center',
@@ -287,18 +286,18 @@ const Explore = () => {
 
         onPress={() => setModalVisible(true)}
       >
-        <SiBuymeacoffee style={{fontSize: 48, fontWeight: "bold", marginBottom: 10}} />
-        <Text style={{fontSize: 24, fontWeight: "bold", marginBottom: 10}}>Add your Expense 
+        <Feather name="coffee" size={36 } color="black" />
+        <Text style={{fontSize: 24, fontWeight: "bold", marginBottom: 10,padding:10, color:"#021024"}}>Add your Expense 
         </Text>
         
       </Pressable>
 
-      <View style={{ flex: 1, padding: 20, backgroundColor: "#f5f5f5" }}>
+      <View style={{ flex: 1, padding: 20, backgroundColor: "transparent" }}>
         <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center'}}>
       <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 10 }}>
         Recent Expenses    
       </Text>
-      <MdMoreTime style={{ fontSize: 24, fontWeight: "bold", marginBottom: 10 }} />
+      <Entypo name="back-in-time" size={24} color="black" />
       </View>
       
 
@@ -310,11 +309,12 @@ const Explore = () => {
       ) : (
         <FlatList
           data={expenses}
+          style={{ marginBottom: 50 }}
           keyExtractor={(item, index) => index.toString()}
           renderItem={({ item }) => (
             <View
               style={{
-                backgroundColor: "#fff",
+                backgroundColor: "#052659",
                 padding: 15,
                 borderRadius: 10,
                 marginBottom: 10,
@@ -325,13 +325,14 @@ const Explore = () => {
                 elevation: 3, // For Android shadow
               }}
             >
-              <Text style={{ fontSize: 18, fontWeight: "bold" }}>{item.itemName}</Text>
-              <Text>total Amount: ₹{item.expenseAmount}</Text>
-              <Text>Category: {item.category}</Text>
-              <Text>My Amount: {item.myexpense}</Text>
-              <Text>Contacts: {item.contacts.join(", ") || "None"}</Text>
-              <Text>Date: {item.createdAt ? item.createdAt.substring(0, 10) : "None"}</Text>
-
+              <Text style={{ fontSize: 18, fontWeight: "bold", color:"#c1e8ff", paddingBottom:10 }}>{item.itemName}</Text>
+              <View style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gridGap: 10}}>
+              <Text style={{ fontSize: 14, color:"#c1e8ff", padding:2 }}>Total Amount: ₹{item.expenseAmount}</Text>
+              <Text style={{ fontSize: 14, color:"#c1e8ff", padding:2 }}>Category: {item.category}</Text>
+              <Text style={{ fontSize: 14, color:"#c1e8ff", padding:2 }}>My Amount: {item.myexpense}</Text>
+              <Text style={{ fontSize: 14, color:"#c1e8ff", padding:2 }}>Contacts: {item.contacts.join(", ") || "None"}</Text>
+              <Text style={{ fontSize: 14, color:"#c1e8ff" , padding:2}}>Date: {item.createdAt ? item.createdAt.substring(0, 10) : "None"}</Text>
+              </View>
             </View>
           )}
         />

@@ -15,15 +15,15 @@ const TabIcon = ({
   <View className="flex-1 mt-3 flex flex-col items-center">
     <Image
       source={icon}
-      tintColor={focused ? "#000" : "#4e250f"}
+      tintColor={focused ? "#000" : "#c1e8ff"}
       resizeMode="contain"
       className="size-6"
     />
     <Text
       className={`${
         focused
-          ? "text-black-300 font-rubik-bold"
-          : "text-black-200 font-rubik"
+          ? "text-black-400 font-rubik-bold"
+          : "text-white font-rubik"
       } text-xs w-full text-center mt-1`}
     >
       {title}
@@ -38,17 +38,17 @@ const TabsLayout = () => {
     Linking.openURL(`tel:${phoneNumber}`);
   };
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, paddingBottom: 40 , backgroundColor: "#5483B3",}}>
     <Tabs
       screenOptions={{
         tabBarShowLabel: false,
         tabBarStyle: {
-          backgroundColor: "#c49c86",
+          backgroundColor: "#5483B3",
           position: "absolute",
-          borderTopColor: "#0061FF1A",
+          borderTopColor: "#5483B3",
           borderTopWidth: 1,
           minHeight: 70,
-          borderRadius: 10,
+          borderRadius: 0,
         },
       }}
     >
@@ -58,7 +58,7 @@ const TabsLayout = () => {
           title: "HOME",
           headerShown: false,
           tabBarIcon: ({ focused }) => (
-            <TabIcon focused={focused} icon={icons.home} title="Home" />
+            <TabIcon focused={focused} icon={icons.wallet} title="Home" />
           ),
         }}
       />
@@ -68,7 +68,7 @@ const TabsLayout = () => {
           title: "Profile",
           headerShown: false,
           tabBarIcon: ({ focused }) => (
-            <TabIcon focused={focused} icon={icons.cutlery} title="Menu" />
+            <TabIcon focused={focused} icon={icons.person} title="Profile" />
           ),
         }}
       />
@@ -81,27 +81,5 @@ const TabsLayout = () => {
   </View>
   );
 };
-const styles = StyleSheet.create({
-  contactButton: {
-    position: "absolute",
-    bottom: 90, // Adjust this to place it above the tab bar
-    right: 20,
-    backgroundColor: "#efac87",
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 50,
-    borderBlockColor:'#000',
-    elevation: 5, // Shadow for Android
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.9,
-    shadowRadius: 10,
-  },
-  contactButtonText: {
-    color: "#361b0d",
-    fontSize: 16,
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-});
+
 export default TabsLayout;

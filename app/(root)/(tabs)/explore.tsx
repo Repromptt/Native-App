@@ -329,8 +329,8 @@ const Explore = () => {
               <View style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gridGap: 10}}>
               <Text style={{ fontSize: 14, color:"#c1e8ff", padding:2 }}>Total Amount: ₹{item.expenseAmount}</Text>
               <Text style={{ fontSize: 14, color:"#c1e8ff", padding:2 }}>Category: {item.category}</Text>
-              <Text style={{ fontSize: 14, color:"#c1e8ff", padding:2 }}>My Amount: {item.myexpense}</Text>
-              <Text style={{ fontSize: 14, color:"#c1e8ff", padding:2 }}>Contacts: {item.contacts.join(", ") || "None"}</Text>
+              <Text style={{ fontSize: 14, color:"#c1e8ff", padding:2 }}>My Amount:{"\n"}₹{item.myexpense}</Text>
+              <Text style={{ fontSize: 14, color:"#c1e8ff", padding:2 }}>Contacts:{"\n"}{item.contacts.join(", ") || "None"}</Text>
               <Text style={{ fontSize: 14, color:"#c1e8ff" , padding:2}}>Date: {item.createdAt ? item.createdAt.substring(0, 10) : "None"}</Text>
               </View>
             </View>

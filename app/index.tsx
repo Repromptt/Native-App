@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View,Image } from "react-native";
 import { useRouter } from "expo-router";
 import { FaArrowsSplitUpAndLeft } from "react-icons/fa6";
 import { Ionicons } from '@expo/vector-icons';
+import icons from "@/constants/icons";
+
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import images from "@/constants/images";
 export default function Index() {
   const router = useRouter();
   const [userId, setUserId] = useState(""); // State to store user input
@@ -35,8 +38,10 @@ export default function Index() {
             bottom: 0,
           }}
         />
+       
         <View className="flex-1 justify-end px-10 pb-[60px]">
           {/* Title */}
+          <Image source={icons.wallet} style={{ width: 60, height: 60,tintColor:"#052659"}} />
           <Text className="text-6xl font-extrabold  mb-2" style={{color:'#052659'}}>Splitkaro MVP-&beta;</Text>
           <Text className="text-2xl font-rubik-extrabold mb-10" style={{color:'#C1E8FF'}}>
             Track your expenses

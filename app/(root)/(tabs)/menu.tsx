@@ -27,7 +27,7 @@ function menu() {
 
   useEffect(() => {
     axios
-      .get(`http://localhost:5000/user/${userId}/insights`)
+      .get(`https://splitkaro-app-mvp.onrender.com/user/${userId}/insights`)
       .then(response => setInsights(response.data))
       .catch(error => console.error("Error fetching data:", error));
   }, [userId]);

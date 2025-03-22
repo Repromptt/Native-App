@@ -16,11 +16,15 @@ app.use(cors(
     }
 ));
 // MongoDB Connection
+
+
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
-  useUnifiedTopology: true,
+  useUnifiedTopology: false,
+  tlsAllowInvalidCertificates: true,  // Add this if using a self-signed cert
 })
 .then(() => {console.log('MongoDB Connected');
+     console.log("MongoDB URI:", process.env.MONGO_URI);
     console.log("GEMINI_API_KEY:", process.env.GEMINI_API_KEY);
 }
 )

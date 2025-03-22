@@ -44,7 +44,7 @@ const Explore = () => {
     };
   
     try {
-      const response = await fetch('http://localhost:5000/add-expense', {
+      const response = await fetch('https://splitkaro-app-mvp.onrender.com/add-expense', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -72,7 +72,7 @@ const Explore = () => {
   useEffect(() => {
     const fetchExpenses = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/expenses?userId=${userId}`); // Assuming your backend accepts userId as a query parameter
+        const response = await fetch(`https://splitkaro-app-mvp.onrender.com/expenses?userId=${userId}`); // Assuming your backend accepts userId as a query parameter
         const data = await response.json();
   
         if (!response.ok) {

@@ -223,6 +223,24 @@ app.get("/user/:userID/insights", async (req, res) => {
   });
   
   
+  
+const url = `https://splitkaro-app-mvp.onrender.com`;
+
+
+
+const interval = 30000;
+
+function reloadWebsite() {
+  axios.get(url)
+    .then(response => {
+      console.log(`Reloaded at ${new Date().toISOString()}: Status Code ${response.status}`);
+    })
+    .catch(error => {
+      console.error(`Error reloading at ${new Date().toISOString()}:`, error.message);
+    });
+}
+
+setInterval(reloadWebsite, interval);
 // Start Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

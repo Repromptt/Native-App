@@ -19,16 +19,7 @@ const Explore = () => {
   const [loading, setLoading] = useState(true);
   
 
-  const fetchWithSelfSignedCert = async () => {
-    try {
-      const response = await RNFetchBlob.fetch('GET', 'https://your-self-signed-server.com/api/data', {
-        trusty: true, // Trust the self-signed certificate
-      });
-      console.log(response.data);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
+  
   const router = useRouter();
 
   // Predefined contact list
@@ -166,7 +157,7 @@ const Explore = () => {
           shadowRadius: 4,
           elevation: 5,
         }}>
-          <Text style={{ marginBottom: 15, textAlign: 'left', fontWeight:'500', fontSize:'24px' }}>Brief about Expense</Text>
+          <Text style={{ marginBottom: 15, textAlign: 'left', fontWeight:'500', fontSize:24 }}>Brief about Expense</Text>
           <TextInput
             editable
             multiline

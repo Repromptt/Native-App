@@ -34,7 +34,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/loginp.png",
+          "image": "./assets/images/icon.png",
           "resizeMode": "cover",
           "backgroundColor": "#41221b",
           "enableFullScreenImage_legacy": true

@@ -15,7 +15,7 @@ const Explore = () => {
   const [selectedContacts, setSelectedContacts] = useState<{ id: number; name: string; phone: string }[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
-   const [expenses, setExpenses] = useState([]);
+  const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
   
 

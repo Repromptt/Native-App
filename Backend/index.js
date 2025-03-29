@@ -21,7 +21,7 @@ app.use(cors(
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: false,
-  tlsAllowInvalidCertificates: true,  // Add this if using a self-signed cert
+  tlsAllowInvalidCertificates: true, // For MongoDB Atlas
 })
 .then(() => {console.log('MongoDB Connected');
      console.log("MongoDB URI:", process.env.MONGO_URI);
@@ -52,7 +52,7 @@ const CATEGORY_LIST = [
     "entertainment", "misc"
   ];
   
-  async function processExpenseData(brief) {
+async function processExpenseData(brief) {
     try {
       const API_KEY = process.env.GEMINI_API_KEY;
       if (!API_KEY) {
@@ -241,6 +241,8 @@ function reloadWebsite() {
 }
 
 setInterval(reloadWebsite, interval);
+reloadWebsite(); 
+
 // Start Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

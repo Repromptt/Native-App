@@ -103,7 +103,32 @@ const Explore = () => {
       setSelectedContacts([...selectedContacts, contact]);
     }
   };
+ const Deletelist = async (id: string) => {
+  try { 
+    const response = await fetch(`https://splitkaro-app-mvp.onrender.com/delete-expense/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('Expense deleted:', data);
+    
+    // Optionally, refresh the expenses list after deletion
+    setExpenses(expenses.filter(expense => expense.id !== id));
+    Alert.alert("Expense deleted successfully");
 
+  }
+ catch (error) {
+  console.error('Error deleting expense:', error);
+  Alert.alert("Error deleting expense");
+}
+};
   const filteredContacts = allContacts.filter(contact =>
     contact.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -323,7 +348,22 @@ const Explore = () => {
               <Text style={{ fontSize: 14, color:"#c1e8ff", padding:2 }}>My Amount:{"\n"}₹{item.myexpense}</Text>
               <Text style={{ fontSize: 14, color:"#c1e8ff", padding:2 }}>Contacts:{"\n"}{item.contacts.join(", ") || "None"}</Text>
               <Text style={{ fontSize: 14, color:"#c1e8ff" , padding:2}}>Date: {item.createdAt ? item.createdAt.substring(0, 10) : "None"}</Text>
+              <Pressable
+              style={[
+                {
+                  borderRadius: 5,
+                  paddingHorizontal: 20,
+                  paddingVertical: 10,
+                  elevation: 2,
+                  backgroundColor: 'white',
+                },
+              ]}
+              onPress={Deletelist}
+            >
+              <Text>Del</Text>
+            </Pressable>
               </View>
+              
             </View>
           )}
         />

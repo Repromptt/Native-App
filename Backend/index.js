@@ -174,7 +174,25 @@ app.get("/expenses", async (req, res) => {
     }
   });
   
-
+  app.delete("/delete-expense/:userId/:expenseId", async (req, res) => {
+    const { userId, expenseId } = req.params;
+    if(!userId || !expenseId) {
+      return res.status(400).json({ message: "User ID and Expense ID are required" });
+    }
+    try {
+      const user =await User.findOne({ UserID: userId });
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      const expenseIndex = user.expenses.findIndex(exp => exp._id.toString() === expenseId);
+      if (expenseIndex === -1) {
+        return res.status(404).json({ message: "Expense not found" });
+      }
+      user.expenses.splice(expenseIndex, 1);
+      await user.save();
+    }
+  });
+  
 
   //insights
 

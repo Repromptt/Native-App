@@ -2,7 +2,7 @@
 
 Welcome to **SplitKaro**, a simple yet powerful expense tracking application designed to make splitting expenses effortless. This app allows users to record expenses, categorize them, and split costs among multiple people seamlessly.
 
-[![Watch the demo](./assets/images/avatar.png)](app_recording.mp4)
+[![Watch the demo](./assets/images/icon.png)](app_recording.mp4)
 
 
 ## Features

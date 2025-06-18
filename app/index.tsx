@@ -28,9 +28,10 @@ export default function Index() {
     checkLogin();
   }, []);
 
+
   const handleLogin = async () => {
     try {
-      const fakeId = "123"; // Replace this with your real Google OAuth or ID logic
+      const fakeId = "Harsh"; // Replace this with your real Google OAuth or ID logic
       await AsyncStorage.setItem("userId", fakeId);
       router.push("/explore");
     } catch (error) {

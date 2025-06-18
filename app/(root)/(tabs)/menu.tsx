@@ -20,8 +20,22 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 
 function menu() {
-  
+  const router = useRouter(); // Make sure this is inside your component
   const [userId, setUserId] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  
+    useEffect(() => {
+        const checkLogin = async () => {
+          const token = await AsyncStorage.getItem("access_token");
+         // console.log(token);
+          if (token===null) {
+            router.replace("/");
+          } else {
+            setIsLoading(false);
+          }
+        };
+        checkLogin();
+      }, []);
 
 useEffect(() => {
   const fetchUserId = async () => {
@@ -37,7 +51,16 @@ useEffect(() => {
 
   fetchUserId();
 }, []);
-
+const handleLogout = async () => {
+  try {
+    await AsyncStorage.clear();
+    Alert.alert("Logged Out", "You have been logged out.");
+    router.replace("/"); // Replace with your login screen route
+  } catch (error) {
+    console.error("Failed to logout:", error);
+    Alert.alert("Error", "Could not log out. Please try again.");
+  }
+};
  
 
   
@@ -54,21 +77,21 @@ useEffect(() => {
                 
                 <Text className='text-3xl font-rubik-bold' style={{color: '#052659'}}>  Hello {userId}</Text>
                 </View>
+                {/* Add a logout button that clears all asyncstorage  */}
 
-
-                
-
-      
-      
-      
-
-     
-
-
-       
-
-             
-    
+                <TouchableOpacity
+    onPress={handleLogout}
+    style={{
+      backgroundColor: '#021024',
+      padding: 10,
+      borderRadius: 8,
+      marginTop: 20,
+      width: 150,
+      alignItems: 'center',
+    }}
+  >
+    <Text style={{ color: 'white', fontWeight: 'bold' }}>Logout</Text>
+  </TouchableOpacity>
        
 
 

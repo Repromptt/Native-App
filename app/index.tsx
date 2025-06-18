@@ -1,93 +1,223 @@
 import React, { useState, useEffect } from "react";
+import {
+  Alert,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+  Image,
+  TextInput,
+  ActivityIndicator,
+  StyleSheet,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Alert, ScrollView, Text, TouchableOpacity, View, Image, ActivityIndicator } from "react-native";
-import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
+import Modal from "react-native-modal";
 import icons from "@/constants/icons";
 
 export default function Index() {
   const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [signupModalVisible, setSignupModalVisible] = useState(false);
+  const [signupData, setSignupData] = useState({ name: "", email: "", password: "" });
   const [isLoading, setIsLoading] = useState(true);
-  const [userId, setUserId] = useState("");
 
-  // Check if user ID exists on app load
   useEffect(() => {
     const checkLogin = async () => {
-      try {
-        const savedId = await AsyncStorage.getItem("userId");
-        if (savedId) {
-          router.replace("/explore"); // Navigate if already logged in
-        } else {
-          setIsLoading(false);
-        }
-      } catch (error) {
-        console.error("Error reading userId:", error);
+      const token = await AsyncStorage.getItem("access_token");
+      if (token) {
+        router.replace("/explore");
+      } else {
         setIsLoading(false);
       }
     };
     checkLogin();
   }, []);
 
-
   const handleLogin = async () => {
     try {
-      const fakeId = "Harsh"; // Replace this with your real Google OAuth or ID logic
-      await AsyncStorage.setItem("userId", fakeId);
-      router.push("/explore");
+      const response = await fetch("https://x8ki-letl-twmt.n7.xano.io/api:wjz1to2Z/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await response.json();
+
+      if (response.ok) {
+        await AsyncStorage.setItem("access_token", data.authToken);
+        await AsyncStorage.setItem("user", JSON.stringify(data.user));
+        router.replace("/explore");
+      } else {
+        Alert.alert("Login Failed", data.message || "Invalid credentials");
+      }
     } catch (error) {
-      Alert.alert("Login Failed", "Something went wrong!");
+      console.error("Login error", error);
+    }
+  };
+
+  const handleSignup = async () => {
+    const { name, email, password } = signupData;
+    try {
+      const response = await fetch("https://x8ki-letl-twmt.n7.xano.io/api:wjz1to2Z/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
+      });
+      const data = await response.json();
+
+      if (response.ok) {
+        await AsyncStorage.setItem("access_token", data.authToken);
+        await AsyncStorage.setItem("user", JSON.stringify(data.user));
+        setSignupModalVisible(false);
+        router.replace("/explore");
+      } else {
+        Alert.alert("Signup Failed", data.message || "Account may already exist");
+      }
+    } catch (error) {
+      console.error("Signup error", error);
     }
   };
 
   if (isLoading) {
     return (
-      <SafeAreaView className="bg-blue h-full justify-center items-center">
+      <SafeAreaView style={styles.container}>
         <ActivityIndicator size="large" color="#fff" />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="bg-blue h-full">
-      <ScrollView contentContainerStyle={{ flex: 1, backgroundColor: "#5483B3" }}>
-        <View
-          style={{
-            position: "absolute",
-            width: "100%",
-            height: "100%",
-            backgroundColor: "black",
-            opacity: 0.01,
-            bottom: 0,
-          }}
-        />
-        <View className="flex-1 justify-end px-10 pb-[60px]">
-          {/* Title */}
-          <Image source={icons.wallet} style={{ width: 60, height: 60, tintColor: "#052659" }} />
-          <Text className="text-6xl font-extrabold mb-2" style={{ color: "#052659" }}>
-            Splitkaro MVP-&beta;
-          </Text>
-          <Text className="text-2xl font-rubik-extrabold mb-10" style={{ color: "#C1E8FF" }}>
-            Track your expenses
-          </Text>
+    <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <Image source={icons.wallet} style={styles.logo} />
 
-          {/* Login Button */}
-          <TouchableOpacity
-            onPress={handleLogin}
-            className="rounded-full w-full"
-            style={{
-              backgroundColor: "#052659",
-              paddingVertical: 15,
-              shadowColor: "#fff",
-              shadowOpacity: 0.2,
-              shadowRadius: 5,
-              shadowOffset: { width: 0, height: 3 },
-              elevation: 5,
-            }}
-          >
-            <Text className="text-lg font-bold text-center text-white">ENTER</Text>
+        <TextInput
+          placeholder="Email"
+          placeholderTextColor="#ccc"
+          value={email}
+          onChangeText={setEmail}
+          style={styles.input}
+        />
+        <TextInput
+          placeholder="Password"
+          placeholderTextColor="#ccc"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          style={styles.input}
+        />
+
+        <TouchableOpacity onPress={handleLogin} style={styles.button}>
+          <Text style={styles.buttonText}>LOGIN</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => setSignupModalVisible(true)} style={styles.linkButton}>
+          <Text style={styles.linkText}>Don't have an account? Sign Up</Text>
+        </TouchableOpacity>
+      </ScrollView>
+
+      <Modal isVisible={signupModalVisible} onBackdropPress={() => setSignupModalVisible(false)}>
+        <View style={styles.modalContainer}>
+          <Text style={styles.modalTitle}>Create Account</Text>
+
+          <TextInput
+            placeholder="Name"
+            placeholderTextColor="#999"
+            style={styles.input}
+            value={signupData.name}
+            onChangeText={(text) => setSignupData({ ...signupData, name: text })}
+          />
+          <TextInput
+            placeholder="Email"
+            placeholderTextColor="#999"
+            style={styles.input}
+            value={signupData.email}
+            onChangeText={(text) => setSignupData({ ...signupData, email: text })}
+          />
+          <TextInput
+            placeholder="Password"
+            placeholderTextColor="#999"
+            secureTextEntry
+            style={styles.input}
+            value={signupData.password}
+            onChangeText={(text) => setSignupData({ ...signupData, password: text })}
+          />
+
+          <TouchableOpacity onPress={handleSignup} style={styles.button}>
+            <Text style={styles.buttonText}>SIGN UP</Text>
           </TouchableOpacity>
         </View>
-      </ScrollView>
+      </Modal>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#052659",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  scrollContainer: {
+    width: "100%",
+    paddingHorizontal: 30,
+    paddingTop: 80,
+    alignItems: "center",
+  },
+  logo: {
+    width: 60,
+    height: 60,
+    marginBottom: 40,
+    tintColor: "#fff",
+  },
+  input: {
+    backgroundColor: "#113F67",
+    color: "#fff",
+    width: "100%",
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    marginBottom: 15,
+    fontSize: 16,
+  },
+  button: {
+    backgroundColor: "#1E90FF",
+    paddingVertical: 14,
+    borderRadius: 12,
+    width: "100%",
+    alignItems: "center",
+    marginTop: 10,
+  },
+  buttonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  linkButton: {
+    marginTop: 20,
+  },
+  linkText: {
+    color: "#a9c9ff",
+    fontSize: 14,
+    textDecorationLine: "underline",
+  },
+  modalContainer: {
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 20,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 15,
+    color: "#052659",
+    textAlign: "center",
+  },
+});
+
+
+
+// https://x8ki-letl-twmt.n7.xano.io/api:wjz1to2Z/auth/signup

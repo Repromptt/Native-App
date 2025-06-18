@@ -13,6 +13,20 @@ const Explore = () => {
   const [inputPrompt, setInputPrompt] = useState('');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+      const checkLogin = async () => {
+        const token = await AsyncStorage.getItem("access_token");
+       // console.log(token);
+        if (token===null) {
+          router.replace("/");
+        } else {
+          setIsLoading(false);
+        }
+      };
+      checkLogin();
+    }, []);
 
   useEffect(() => {
     const fetchUserId = async () => {

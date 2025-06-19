@@ -9,9 +9,6 @@ dist/
 web-build/
 expo-env.d.ts
 
-#enviorment
-.env
-Backend/.env
 
 # Native
 *.orig.*

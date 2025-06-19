@@ -6,6 +6,9 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import icons from "@/constants/icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Clipboard from 'expo-clipboard';
+import Constants from 'expo-constants';
+const GEMINI_API_KEY = Constants.expoConfig.extra.geminiApiKey;
+import axios from 'axios';
 
 const Explore = () => {
   const router = useRouter();
@@ -17,7 +20,7 @@ const Explore = () => {
 
   useEffect(() => {
       const checkLogin = async () => {
-        const token = await AsyncStorage.getItem("access_token");
+        const token = await AsyncStorage.getItem("userID");
        // console.log(token);
         if (token===null) {
           router.replace("/");
@@ -31,9 +34,10 @@ const Explore = () => {
   useEffect(() => {
     const fetchUserId = async () => {
       try {
-        const value = await AsyncStorage.getItem("userId");
+        const value = await AsyncStorage.getItem("user");
         if (value !== null) {
-          setUserId(value);
+          const user = JSON.parse(value); // parse the JSON string
+          setUserId(user.name); // access the name property
         }
       } catch (e) {
         console.error("Failed to fetch userId:", e);
@@ -42,48 +46,108 @@ const Explore = () => {
     fetchUserId();
   }, []);
 
-  const handleGenerate = async () => {
-    if (!inputPrompt.trim()) {
-      Alert.alert("Input required", "Please enter a prompt.");
+ useEffect(() => {
+  const fetchUserData = async () => {
+    try {
+      const userId = await AsyncStorage.getItem("userID");
+      const userData = await AsyncStorage.getItem("user");
+
+     // console.log("User ID:", userId);
+      //console.log("User Data:", userData ? JSON.parse(userData) : null);
+    } catch (e) {
+      console.error("Error fetching from AsyncStorage:", e);
+    }
+  };
+
+  fetchUserData();
+}, []);
+
+
+useEffect(() => {
+  const resetCountIfNewDay = async () => {
+    const today = new Date().toDateString();
+    const lastDate = await AsyncStorage.getItem("lastDate");
+
+    if (lastDate !== today) {
+      await AsyncStorage.setItem("count", "0");
+      await AsyncStorage.setItem("lastDate", today);
+    }
+  };
+
+  resetCountIfNewDay();
+}, []);
+
+
+
+const handleGenerate = async () => {
+  if (!inputPrompt.trim()) {
+    Alert.alert("Input required", "Please enter a prompt.");
+    return;
+  }
+
+  try {
+    const userDataRaw = await AsyncStorage.getItem("user");
+    const userData = userDataRaw ? JSON.parse(userDataRaw) : {};
+
+    if (userData?.ispremium !== 1) {
+      const countRaw = await AsyncStorage.getItem("count");
+      const count = parseInt(countRaw || "0", 10);
+
+      if (count >= 2) {
+        Alert.alert("Tokens Exhausted", "Upgrade to pro");
+        return;
+      }
+    }
+
+    if (!GEMINI_API_KEY) {
+      Alert.alert("Missing Key", "GEMINI_API_KEY not found in app config.");
       return;
     }
 
     setLoading(true);
-    try {
-      const response = await fetch("https://your-backend.com/api/correct-prompt", {
-        method: "POST",
+
+    const geminiPrompt = `
+Give an improved and optimized version of the following prompt. Also provide one learning or feedback for improvement.
+
+Prompt: ${inputPrompt}
+    `;
+
+    const response = await axios.post(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+      {
+        contents: [{ role: "user", parts: [{ text: geminiPrompt }] }],
+      },
+      {
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: inputPrompt })
-      });
+      }
+    );
 
-      const data = await response.json();
+    const fullText = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    const [corrected, ...rest] = fullText.split("Learning:");
+    const learning = rest.join("Learning:").trim();
 
-      setResults({
-        original: inputPrompt,
-        corrected: Array.isArray(data.correctedPrompts) ? data.correctedPrompts : []
-      });
-    } catch (error) {
-      console.error("Error fetching prompts:", error);
-      Alert.alert("Error", "Backend not responding. Showing test prompts instead.");
+    setResults({
+      original: inputPrompt,
+      corrected: [
+        {
+          prompt: corrected.trim(),
+          learning: learning || "No learning provided",
+        },
+      ],
+    });
 
-      // ✅ Fallback mock data
-      setResults({
-        original: inputPrompt,
-        corrected: [
-          {
-            prompt: "Write a LinkedIn post highlighting how AI is revolutionizing diagnostics in healthcare.",
-            learning: "Be more specific about the content type and focus area."
-          },
-          {
-            prompt: "Draft a tweet that explains how AI improves patient outcomes in hospitals.",
-            learning: "Specify the platform and desired outcome to improve clarity."
-          }
-        ]
-      });
-    } finally {
-      setLoading(false);
+    // Increment usage count for free users
+    if (userData?.ispremium !== 1) {
+      const newCount = (parseInt(await AsyncStorage.getItem("count") || "0", 10)) + 1;
+      await AsyncStorage.setItem("count", newCount.toString());
     }
-  };
+  } catch (error) {
+    console.error("Error calling Gemini API:", error);
+    Alert.alert("Error", "Something went wrong while generating.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleCopy = async (text) => {
     await Clipboard.setStringAsync(text);
@@ -263,3 +327,6 @@ const styles = StyleSheet.create({
 });
 
 export default Explore;
+
+
+//https://x8ki-letl-twmt.n7.xano.io/api:wjz1to2Z/user/{email}

@@ -26,7 +26,7 @@ export default function Index() {
 
   useEffect(() => {
     const checkLogin = async () => {
-      const token = await AsyncStorage.getItem("access_token");
+      const token = await AsyncStorage.getItem("userID");
       if (token) {
         router.replace("/explore");
       } else {
@@ -37,23 +37,35 @@ export default function Index() {
   }, []);
 
   const handleLogin = async () => {
-    try {
+    try {                           
       const response = await fetch("https://x8ki-letl-twmt.n7.xano.io/api:wjz1to2Z/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
       const data = await response.json();
+      const today = new Date().toDateString();
 
       if (response.ok) {
-        await AsyncStorage.setItem("access_token", data.authToken);
+        await AsyncStorage.setItem("userID", data.authToken);
         await AsyncStorage.setItem("user", JSON.stringify(data.user));
+        await AsyncStorage.setItem("count", "0");
+         await AsyncStorage.setItem("lastDate", today);
         router.replace("/explore");
       } else {
-        Alert.alert("Login Failed", data.message || "Invalid credentials");
+        
+         if (response.status === 403) {
+        Alert.alert("Login Failed", data.message || "Access Forbidden. Check your permissions or API configuration.");
+      } else if (data.message) {
+        Alert.alert("Login Failed", data.message);
+      } else {
+        Alert.alert("Login Failed", "An unexpected error occurred. Please try again.");
+      }
       }
     } catch (error) {
+       Alert.alert("Login Failed", "No Account Found");
       console.error("Login error", error);
+     
     }
   };
 
@@ -68,7 +80,7 @@ export default function Index() {
       const data = await response.json();
 
       if (response.ok) {
-        await AsyncStorage.setItem("access_token", data.authToken);
+        await AsyncStorage.setItem("userID", data.authToken);
         await AsyncStorage.setItem("user", JSON.stringify(data.user));
         setSignupModalVisible(false);
         router.replace("/explore");
@@ -76,6 +88,7 @@ export default function Index() {
         Alert.alert("Signup Failed", data.message || "Account may already exist");
       }
     } catch (error) {
+      Alert.alert("Signup Failed Try Again");
       console.error("Signup error", error);
     }
   };

@@ -26,7 +26,7 @@ export default function Index() {
   const [signupModalVisible, setSignupModalVisible] = useState(false);
   const [signupData, setSignupData] = useState({ name: "", email: "", password: "" });
   const [isLoading, setIsLoading] = useState(true);
-  const baseURL = "http://localhost:5000/api";
+  const baseURL = "https://b716-2409-40e4-200d-dcdc-ddec-a0fd-ce29-1c65.ngrok-free.app/api";
 
   useEffect(() => {
     const checkLogin = async () => {

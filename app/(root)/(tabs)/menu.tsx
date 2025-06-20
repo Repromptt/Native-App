@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert, StyleSheet, Image, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Alert, StyleSheet, Image, ActivityIndicator, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from "expo-router";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -10,7 +10,7 @@ function Menu() {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [promptCount ,setPromptCount]= useState(0);
+  const [promptCount, setPromptCount] = useState(0);
 
   useEffect(() => {
     const checkLogin = async () => {
@@ -33,7 +33,6 @@ function Menu() {
           const userData = JSON.parse(value);
           setUser(userData);
           setPromptCount(parseInt(countValue || "0", 10));
-
         }
       } catch (e) {
         console.error("Failed to fetch user:", e);
@@ -41,6 +40,45 @@ function Menu() {
     };
     fetchUser();
   }, []);
+
+  useEffect(() => {
+  const fetchLatestUserInfo = async () => {
+    try {
+      const value = await AsyncStorage.getItem("user");
+      if (value !== null) {
+        const userData = JSON.parse(value);
+        const { email } = userData;
+
+        if (!email ) {
+          console.warn("Missing email or password for update.");
+          return;
+        }
+
+        const response = await fetch("https://b716-2409-40e4-200d-dcdc-ddec-a0fd-ce29-1c65.ngrok-free.app/api/get-info", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          
+          await AsyncStorage.setItem("user", JSON.stringify(data));
+          setUser(data);
+        } else {
+          console.error("Failed to fetch updated user info.");
+        }
+      }
+    } catch (error) {
+      console.error("Error during user info refresh:", error);
+    }
+  };
+
+  fetchLatestUserInfo();
+}, []);
+
 
   const handleLogout = async () => {
     try {
@@ -54,8 +92,16 @@ function Menu() {
   };
 
   const handleGoPremium = () => {
-    Alert.alert("Upgrade", "Redirecting to payment...");
-    // Implement premium upgrade flow here
+    if (!user?.email) {
+      Alert.alert("Error", "Email not found. Please log in again.");
+      return;
+    }
+    const email = encodeURIComponent(user.email);
+    const checkoutURL = `https://buy.stripe.com/test_bJebJ0gCEeOrcy6015grS00?prefilled_email=${email}`;
+
+    Linking.openURL(checkoutURL).catch((err) =>
+      Alert.alert("Error", "Failed to open payment link.")
+    );
   };
 
   if (isLoading || !user) {
@@ -66,8 +112,7 @@ function Menu() {
     );
   }
 
-
-  const promptLeft = user.ispremium ? "Unlimited" : `${2 - promptCount} remaining`;
+  const promptLeft = user.isPremium ? "Unlimited" : `${2 - promptCount} remaining`;
 
   return (
     <SafeAreaView style={{ backgroundColor: '#c1e8ff', flex: 1 }}>
@@ -84,13 +129,11 @@ function Menu() {
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Premium:</Text>
-          <Text style={styles.cardValue}>{user.ispremium ? "✅ Premium User" : "❌ Free User"}</Text>
-          <Text style={[styles.cardValue, { marginTop: 8 }]}>
-            Prompts Left: {promptLeft}
-          </Text>
+          <Text style={styles.cardValue}>{user.isPremium ? "✅ Premium User" : "❌ Free User"}</Text>
+          <Text style={[styles.cardValue, { marginTop: 8 }]}>Prompts Left: {promptLeft}</Text>
         </View>
 
-        {!user.ispremium && (
+        {!user.isPremium && (
           <TouchableOpacity style={styles.premiumBtn} onPress={handleGoPremium}>
             <Text style={styles.btnText}>Upgrade to Premium</Text>
           </TouchableOpacity>

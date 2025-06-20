@@ -118,18 +118,20 @@ function Menu() {
     <SafeAreaView style={{ backgroundColor: '#c1e8ff', flex: 1 }}>
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
         <View style={styles.header}>
-          <Text style={styles.headerText}>Splitkaro &beta;</Text>
+          <Text style={styles.headerText}>Repromptt</Text>
           <MaterialCommunityIcons name="set-split" size={48} color="black" />
         </View>
 
         <View style={styles.profileContainer}>
           <Image source={icons.person} style={styles.avatar} />
-          <Text style={styles.username}>Hello, {user.name}</Text>
+          <Text style={styles.username}>Hello {user.name}</Text>
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Premium:</Text>
-          <Text style={styles.cardValue}>{user.isPremium ? "✅ Premium User" : "❌ Free User"}</Text>
+          <Text style={styles.cardTitle}>Profile</Text>
+          <Text style={styles.cardValue}>Name : {user.name}</Text>
+          <Text style={[styles.cardValue, { marginTop: 8 }]}>Email : {user.email}</Text>
+          <Text style={[styles.cardValue, { marginTop: 8 }]}>Premium: {user.isPremium ? "✅ Premium" : "❌ Free"}</Text>
           <Text style={[styles.cardValue, { marginTop: 8 }]}>Prompts Left: {promptLeft}</Text>
         </View>
 
@@ -183,14 +185,19 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: "bold",
     color: "#021024",
-    marginBottom: 8,
+    marginBottom: 20,
   },
   cardValue: {
-    fontSize: 16,
+    fontSize: 18,
+    fontWeight: "600",
     color: "#052659",
+    backgroundColor:"rgb(136, 181, 250)",
+    padding: 5 ,
+    borderRadius: 5
+
   },
   premiumBtn: {
     backgroundColor: "#021024",

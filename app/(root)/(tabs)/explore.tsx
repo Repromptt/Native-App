@@ -7,7 +7,7 @@ import icons from "@/constants/icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Clipboard from 'expo-clipboard';
 import Constants from 'expo-constants';
-const GEMINI_API_KEY = Constants.expoConfig.extra.geminiApiKey;
+const GEMINI_API_KEY = Constants.expoConfig?.extra?.geminiApiKey; // safer access
 import axios from 'axios';
 
 const Explore = () => {
@@ -19,27 +19,28 @@ const Explore = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-      const checkLogin = async () => {
+    const checkLogin = async () => {
+      try {
         const token = await AsyncStorage.getItem("user");
-        console.log(token);
-       // console.log(token);
-        if (token===null) {
+        if (!token) {
           router.replace("/");
         } else {
           setIsLoading(false);
         }
-      };
-      checkLogin();
-    }, []);
+      } catch (error) {
+        console.error("Error checking login:", error);
+      }
+    };
+    checkLogin();
+  }, []);
 
   useEffect(() => {
     const fetchUserId = async () => {
       try {
         const value = await AsyncStorage.getItem("user");
-        
-        if (value !== null) {
-          const user = JSON.parse(value); // parse the JSON string
-          setUserId(user.name); // access the name property
+        if (value) {
+          const user = JSON.parse(value);
+          setUserId(user.name);
         }
       } catch (e) {
         console.error("Failed to fetch userId:", e);
@@ -48,108 +49,75 @@ const Explore = () => {
     fetchUserId();
   }, []);
 
- useEffect(() => {
-  const fetchUserData = async () => {
-    try {
-      const userId = await AsyncStorage.getItem("userID");
-      const userData = await AsyncStorage.getItem("user");
-
-     // console.log("User ID:", userId);
-      //console.log("User Data:", userData ? JSON.parse(userData) : null);
-    } catch (e) {
-      console.error("Error fetching from AsyncStorage:", e);
-    }
-  };
-
-  fetchUserData();
-}, []);
-
-
-useEffect(() => {
-  const resetCountIfNewDay = async () => {
-    const today = new Date().toDateString();
-    const lastDate = await AsyncStorage.getItem("lastDate");
-
-    if (lastDate !== today) {
-      await AsyncStorage.setItem("count", "0");
-      await AsyncStorage.setItem("lastDate", today);
-    }
-  };
-
-  resetCountIfNewDay();
-}, []);
-
-
-
-const handleGenerate = async () => {
-  if (!inputPrompt.trim()) {
-    Alert.alert("Input required", "Please enter a prompt.");
-    return;
-  }
-
-  try {
-    const userDataRaw = await AsyncStorage.getItem("user");
-    const userData = userDataRaw ? JSON.parse(userDataRaw) : {};
-
-    if (userData?.ispremium !== 1) {
-      const countRaw = await AsyncStorage.getItem("count");
-      const count = parseInt(countRaw || "0", 10);
-
-      if (count >= 2) {
-        Alert.alert("Tokens Exhausted", "Upgrade to pro");
-        return;
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const userId = await AsyncStorage.getItem("userID");
+        const userData = await AsyncStorage.getItem("user");
+        console.log("User Data:", userData ? JSON.parse(userData) : null);
+      } catch (e) {
+        console.error("Error fetching from AsyncStorage:", e);
       }
-    }
+    };
+    fetchUserData();
+  }, []);
 
-    if (!GEMINI_API_KEY) {
-      Alert.alert("Missing Key", "GEMINI_API_KEY not found in app config.");
+  useEffect(() => {
+    const resetCountIfNewDay = async () => {
+      try {
+        const today = new Date().toDateString();
+        const lastDate = await AsyncStorage.getItem("lastDate");
+
+        if (lastDate !== today) {
+          await AsyncStorage.setItem("count", "0");
+          await AsyncStorage.setItem("lastDate", today);
+        }
+      } catch (error) {
+        console.error("Error resetting count:", error);
+      }
+    };
+
+    resetCountIfNewDay();
+  }, []);
+
+  const handleGenerate = async () => {
+    if (!inputPrompt) {
+      Alert.alert("Error", "Please enter a prompt first.");
       return;
     }
 
     setLoading(true);
+    setResults(null);
 
-    const geminiPrompt = `
-Give an improved and optimized version of the following prompt. Also provide one learning or feedback for improvement.
-
-Prompt: ${inputPrompt}
-    `;
-
-    const response = await axios.post(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        contents: [{ role: "user", parts: [{ text: geminiPrompt }] }],
-      },
-      {
-        headers: { "Content-Type": "application/json" },
-      }
-    );
-
-    const fullText = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-    const [corrected, ...rest] = fullText.split("Learning:");
-    const learning = rest.join("Learning:").trim();
-
-    setResults({
-      original: inputPrompt,
-      corrected: [
-        {
-          prompt: corrected.trim(),
-          learning: learning || "No learning provided",
+    try {
+      const response = await fetch("https://b716-2409-40e4-200d-dcdc-ddec-a0fd-ce29-1c65.ngrok-free.app/api/correct-prompt", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      ],
-    });
+        body: JSON.stringify({ inputPrompt }),
+      });
 
-    // Increment usage count for free users
-    if (userData?.ispremium !== 1) {
-      const newCount = (parseInt(await AsyncStorage.getItem("count") || "0", 10)) + 1;
-      await AsyncStorage.setItem("count", newCount.toString());
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Something went wrong");
+      }
+
+      const data = await response.json();
+      console.log(data);
+      setInputPrompt('');
+
+      setResults({
+        original: inputPrompt,
+        corrected: data.correctedPrompt || [],
+      });
+    } catch (error) {
+      console.error("Error generating prompt:", error.message);
+      Alert.alert("Error", "Failed to generate prompt. Please try again.");
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error("Error calling Gemini API:", error);
-    Alert.alert("Error", "Something went wrong while generating.");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const handleCopy = async (text) => {
     await Clipboard.setStringAsync(text);
@@ -161,14 +129,13 @@ Prompt: ${inputPrompt}
       <ScrollView contentContainerStyle={styles.scrollView}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Repromptt</Text>
-          <MaterialCommunityIcons name="set-split" size={48} color="#021024" />
+          <TouchableOpacity onPress={() => router.push(`/menu`)} style={styles.profileButton}>
+            <Image source={icons.person} style={styles.profileIcon} />
+          </TouchableOpacity>
         </View>
 
         <View style={styles.userRow}>
           <Text style={styles.welcomeText}>Welcome {userId}</Text>
-          <TouchableOpacity onPress={() => router.push(`/menu`)} style={styles.profileButton}>
-            <Image source={icons.person} style={styles.profileIcon} />
-          </TouchableOpacity>
         </View>
 
         <View style={styles.container}>
@@ -329,6 +296,3 @@ const styles = StyleSheet.create({
 });
 
 export default Explore;
-
-
-//https://x8ki-letl-twmt.n7.xano.io/api:wjz1to2Z/user/{email}

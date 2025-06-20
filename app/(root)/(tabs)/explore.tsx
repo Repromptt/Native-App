@@ -20,7 +20,8 @@ const Explore = () => {
 
   useEffect(() => {
       const checkLogin = async () => {
-        const token = await AsyncStorage.getItem("userID");
+        const token = await AsyncStorage.getItem("user");
+        console.log(token);
        // console.log(token);
         if (token===null) {
           router.replace("/");
@@ -35,6 +36,7 @@ const Explore = () => {
     const fetchUserId = async () => {
       try {
         const value = await AsyncStorage.getItem("user");
+        
         if (value !== null) {
           const user = JSON.parse(value); // parse the JSON string
           setUserId(user.name); // access the name property

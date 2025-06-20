@@ -14,7 +14,7 @@ function Menu() {
 
   useEffect(() => {
     const checkLogin = async () => {
-      const token = await AsyncStorage.getItem("userID");
+      const token = await AsyncStorage.getItem("user");
       if (!token) {
         router.replace("/");
       } else {

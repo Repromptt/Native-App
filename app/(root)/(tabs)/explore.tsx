@@ -7,24 +7,29 @@ import icons from "@/constants/icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Clipboard from 'expo-clipboard';
 import Constants from 'expo-constants';
-const GEMINI_API_KEY = Constants.expoConfig?.extra?.geminiApiKey; // safer access
 import axios from 'axios';
+import moment from "moment";
 
 const Explore = () => {
   const router = useRouter();
   const [userId, setUserId] = useState(null);
+  const [isPremium, setIsPremium] = useState(false);
   const [inputPrompt, setInputPrompt] = useState('');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [dailyCount, setDailyCount] = useState(0);
 
   useEffect(() => {
     const checkLogin = async () => {
       try {
-        const token = await AsyncStorage.getItem("user");
-        if (!token) {
+        const userData = await AsyncStorage.getItem("user");
+        if (!userData) {
           router.replace("/");
         } else {
+          const user = JSON.parse(userData);
+          setUserId(user.name);
+          setIsPremium(user.isPremium);
           setIsLoading(false);
         }
       } catch (error) {
@@ -32,34 +37,6 @@ const Explore = () => {
       }
     };
     checkLogin();
-  }, []);
-
-  useEffect(() => {
-    const fetchUserId = async () => {
-      try {
-        const value = await AsyncStorage.getItem("user");
-        if (value) {
-          const user = JSON.parse(value);
-          setUserId(user.name);
-        }
-      } catch (e) {
-        console.error("Failed to fetch userId:", e);
-      }
-    };
-    fetchUserId();
-  }, []);
-
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const userId = await AsyncStorage.getItem("userID");
-        const userData = await AsyncStorage.getItem("user");
-        console.log("User Data:", userData ? JSON.parse(userData) : null);
-      } catch (e) {
-        console.error("Error fetching from AsyncStorage:", e);
-      }
-    };
-    fetchUserData();
   }, []);
 
   useEffect(() => {
@@ -71,12 +48,15 @@ const Explore = () => {
         if (lastDate !== today) {
           await AsyncStorage.setItem("count", "0");
           await AsyncStorage.setItem("lastDate", today);
+          setDailyCount(0);
+        } else {
+          const currentCount = await AsyncStorage.getItem("count");
+          setDailyCount(parseInt(currentCount || '0'));
         }
       } catch (error) {
         console.error("Error resetting count:", error);
       }
     };
-
     resetCountIfNewDay();
   }, []);
 
@@ -86,11 +66,16 @@ const Explore = () => {
       return;
     }
 
+    if (!isPremium && dailyCount >= 2) {
+      Alert.alert("Limit Reached", "Free users can only generate 2 prompts per day. Upgrade to Premium for unlimited access.");
+      return;
+    }
+
     setLoading(true);
     setResults(null);
 
     try {
-      const response = await fetch("https://b716-2409-40e4-200d-dcdc-ddec-a0fd-ce29-1c65.ngrok-free.app/api/correct-prompt", {
+      const response = await fetch("https://reprompttserver.onrender.com/api/correct-prompt", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -104,13 +89,19 @@ const Explore = () => {
       }
 
       const data = await response.json();
-      console.log(data);
       setInputPrompt('');
 
       setResults({
         original: inputPrompt,
         corrected: data.correctedPrompt || [],
       });
+
+      if (!isPremium) {
+        const newCount = dailyCount + 1;
+        setDailyCount(newCount);
+        await AsyncStorage.setItem("count", newCount.toString());
+      }
+
     } catch (error) {
       console.error("Error generating prompt:", error.message);
       Alert.alert("Error", "Failed to generate prompt. Please try again.");
@@ -119,23 +110,24 @@ const Explore = () => {
     }
   };
 
+
   const handleCopy = async (text) => {
     await Clipboard.setStringAsync(text);
-    Alert.alert("Copied", "Prompt copied to clipboard.");
+    //Alert.alert("Copied", "Prompt copied to clipboard.");
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollView}>
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Repromptt</Text>
+          <Text style={styles.headerTitle}>Repromptt </Text>
           <TouchableOpacity onPress={() => router.push(`/menu`)} style={styles.profileButton}>
             <Image source={icons.person} style={styles.profileIcon} />
           </TouchableOpacity>
         </View>
 
         <View style={styles.userRow}>
-          <Text style={styles.welcomeText}>Welcome {userId}</Text>
+          <Text style={styles.welcomeText}> Welcome {userId}</Text>
         </View>
 
         <View style={styles.container}>
@@ -153,21 +145,24 @@ const Explore = () => {
 
           {loading && <ActivityIndicator size="large" color="#052659" style={styles.loader} />}
 
-          {results && (
+         
+        </View>
+         {results && (
             <View style={styles.resultsContainer}>
-              <Text style={styles.sectionTitle}>Original Prompt</Text>
-              <PromptCard text={results.original} onCopy={() => handleCopy(results.original)} />
-
+             
               {results.corrected.map((item, index) => (
                 <View key={index} style={styles.correctedItem}>
                   <Text style={styles.sectionTitle}>Corrected Prompt {index + 1}</Text>
                   <PromptCard text={item.prompt} onCopy={() => handleCopy(item.prompt)} />
-                  <Text style={styles.learningText}>💡 Learning: {item.learning}</Text>
+                  <Text style={styles.learningText}>💡Learning-{"\n"}
+                    <Text style={styles.learningText2}>{item.learning}</Text></Text>
                 </View>
               ))}
+               <Text style={styles.sectionTitle}>Original Prompt</Text>
+              <PromptCard text={results.original} onCopy={() => handleCopy(results.original)} />
+
             </View>
           )}
-        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -175,7 +170,7 @@ const Explore = () => {
 
 const PromptCard = ({ text, onCopy }) => (
   <View style={styles.promptCard}>
-    <Text style={styles.promptText}>{text}</Text>
+    <Text style={styles.promptText}>"{text}"</Text>
     <TouchableOpacity onPress={onCopy} style={styles.copyButton}>
       <Text style={styles.copyText}>Copy</Text>
     </TouchableOpacity>
@@ -184,22 +179,26 @@ const PromptCard = ({ text, onCopy }) => (
 
 const styles = StyleSheet.create({
   safeArea: {
-    backgroundColor: '#c1e8ff',
+    backgroundColor: '#eddbf8',
     flex: 1
   },
   scrollView: {
     paddingBottom: 40
   },
   header: {
-    backgroundColor: '#5483B3',
-    padding: 10,
+    backgroundColor: '#cc95f8',
+    padding: 15,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center'
+    alignItems: 'center',
+    borderBottomRightRadius: 20,
+    borderBottomLeftRadius: 20
   },
   headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold'
+    fontSize: 30,
+    fontWeight: '800',
+    color: "#420472"
+
   },
   userRow: {
     flexDirection: 'row',
@@ -208,26 +207,31 @@ const styles = StyleSheet.create({
   },
   welcomeText: {
     fontSize: 30,
-    fontWeight: "bold",
+    fontWeight: 600,
+    fontStyle:"italic",
     paddingLeft: 10,
     padding: 20,
-    color: "#052659"
+    color: "#052659",
+    marginBottom:10
   },
   profileButton: {
     padding: 10,
-    borderRadius: 8
+    borderRadius: 8,
+    borderBlockColor:"#fff",
   },
   profileIcon: {
     width: 36,
     height: 36,
-    tintColor: "#021024"
+    tintColor: "#021024",
+    borderColor: "fff"
   },
   container: {
     paddingHorizontal: 16
   },
   label: {
     fontSize: 18,
-    color: "#021024",
+    fontWeight: 500,
+    color: "#420472",
     marginBottom: 6
   },
   input: {
@@ -241,7 +245,7 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: "#052659",
-    padding: 12,
+    padding: 15,
     marginTop: 12,
     borderRadius: 8,
     alignItems: "center"
@@ -254,7 +258,11 @@ const styles = StyleSheet.create({
     marginTop: 20
   },
   resultsContainer: {
-    marginTop: 30
+    marginTop: 30,
+    padding:20,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    backgroundColor:"#be76f8",
   },
   sectionTitle: {
     fontSize: 20,
@@ -266,20 +274,22 @@ const styles = StyleSheet.create({
     marginTop: 20
   },
   promptCard: {
-    backgroundColor: "#e6f1f5",
+    backgroundColor: "#eddbf8",
     padding: 12,
-    borderRadius: 8,
+    borderTopRightRadius: 8,
+    borderTopLeftRadius: 8,
     position: "relative"
   },
   promptText: {
-    fontSize: 16,
+    fontSize: 18,
     color: "#000"
   },
   copyButton: {
     position: "absolute",
-    top: 10,
+    top: -40,
     right: 10,
     backgroundColor: "#052659",
+    margin: 3,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 6
@@ -288,10 +298,23 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 12
   },
-  learningText: {
-    marginTop: 8,
+  learningText2: {
     fontSize: 14,
-    color: "#333"
+    fontWeight: 600,
+    color: "#3f0449"
+  },
+   learningText: {
+     backgroundColor:"#ecbcf4",
+     borderColor: "#820696",
+     borderStyle:"solid",
+     borderWidth: 1.5,
+     borderBottomLeftRadius: 10,
+     borderBottomRightRadius: 10,
+     marginBottom:18,
+     padding:14,
+    fontSize: 18,
+    color: "#820896",
+    fontWeight: 800,
   }
 });
 

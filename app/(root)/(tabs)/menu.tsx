@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Alert, StyleSheet, Image, ActivityIndicator, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from "expo-router";
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import icons from "@/constants/icons";
 
@@ -42,43 +41,41 @@ function Menu() {
   }, []);
 
   useEffect(() => {
-  const fetchLatestUserInfo = async () => {
-    try {
-      const value = await AsyncStorage.getItem("user");
-      if (value !== null) {
-        const userData = JSON.parse(value);
-        const { email } = userData;
+    const fetchLatestUserInfo = async () => {
+      try {
+        const value = await AsyncStorage.getItem("user");
+        if (value !== null) {
+          const userData = JSON.parse(value);
+          const { email } = userData;
 
-        if (!email ) {
-          console.warn("Missing email or password for update.");
-          return;
+          if (!email) {
+            console.warn("Missing email for update.");
+            return;
+          }
+
+          const response = await fetch("https://reprompttserver.onrender.com/api/get-info", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ email }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            await AsyncStorage.setItem("user", JSON.stringify(data));
+            setUser(data);
+          } else {
+            console.error("Failed to fetch updated user info.");
+          }
         }
-
-        const response = await fetch("https://b716-2409-40e4-200d-dcdc-ddec-a0fd-ce29-1c65.ngrok-free.app/api/get-info", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email }),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          
-          await AsyncStorage.setItem("user", JSON.stringify(data));
-          setUser(data);
-        } else {
-          console.error("Failed to fetch updated user info.");
-        }
+      } catch (error) {
+        console.error("Error during user info refresh:", error);
       }
-    } catch (error) {
-      console.error("Error during user info refresh:", error);
-    }
-  };
+    };
 
-  fetchLatestUserInfo();
-}, []);
-
+    fetchLatestUserInfo();
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -99,7 +96,7 @@ function Menu() {
     const email = encodeURIComponent(user.email);
     const checkoutURL = `https://buy.stripe.com/test_bJebJ0gCEeOrcy6015grS00?prefilled_email=${email}`;
 
-    Linking.openURL(checkoutURL).catch((err) =>
+    Linking.openURL(checkoutURL).catch(() =>
       Alert.alert("Error", "Failed to open payment link.")
     );
   };
@@ -112,92 +109,108 @@ function Menu() {
     );
   }
 
-  const promptLeft = user.isPremium ? "Unlimited" : `${2 - promptCount} remaining`;
+  const promptLeft = user.isPremium ? "Unlimited" : `${Math.max(0, 2 - promptCount)} remaining`;
 
   return (
-    <SafeAreaView style={{ backgroundColor: '#c1e8ff', flex: 1 }}>
+    <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
         <View style={styles.header}>
-          <Text style={styles.headerText}>Repromptt</Text>
-          <MaterialCommunityIcons name="set-split" size={48} color="black" />
+          <Text style={styles.headerText}>Repromptt {user.isPremium ? "👑" : ""}</Text>
+          <TouchableOpacity onPress={() => router.push(`/explore`)} style={styles.profileButton}>
+            <Image source={icons.rightArrow} style={styles.profileIcon} />
+          </TouchableOpacity>
         </View>
 
         <View style={styles.profileContainer}>
           <Image source={icons.person} style={styles.avatar} />
-          <Text style={styles.username}>Hello {user.name}</Text>
+          <Text style={styles.username}>Profile</Text>
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Profile</Text>
           <Text style={styles.cardValue}>Name : {user.name}</Text>
           <Text style={[styles.cardValue, { marginTop: 8 }]}>Email : {user.email}</Text>
-          <Text style={[styles.cardValue, { marginTop: 8 }]}>Premium: {user.isPremium ? "✅ Premium" : "❌ Free"}</Text>
+          <Text style={[styles.cardValue, { marginTop: 8 }]}>Status: {user.isPremium ? "👑 Premium" : "🆓 Basic"}</Text>
           <Text style={[styles.cardValue, { marginTop: 8 }]}>Prompts Left: {promptLeft}</Text>
-        </View>
 
-        {!user.isPremium && (
-          <TouchableOpacity style={styles.premiumBtn} onPress={handleGoPremium}>
-            <Text style={styles.btnText}>Upgrade to Premium</Text>
+          {!user.isPremium && (
+            <TouchableOpacity style={styles.premiumBtn} onPress={handleGoPremium}>
+              <Text style={styles.btnText}>Upgrade to Premium 👑</Text>
+            </TouchableOpacity>
+          )}
+
+          <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
+            <Text style={styles.btnText}>Logout</Text>
           </TouchableOpacity>
-        )}
-
-        <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-          <Text style={styles.btnText}>Logout</Text>
-        </TouchableOpacity>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
-    backgroundColor: '#5483B3',
+  safeArea: {
+    backgroundColor: '#eddbf8',
+    flex: 1
+  },
+  profileButton: {
     padding: 10,
+    borderRadius: 8,
+  },
+  profileIcon: {
+    width: 36,
+    height: 36,
+    tintColor: "#021024",
+  },
+  header: {
+    backgroundColor: '#cc95f8',
+    padding: 15,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    borderBottomRightRadius: 20,
+    borderBottomLeftRadius: 20
   },
   headerText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontSize: 30,
+    fontWeight: '800',
+    color: "#420472"
   },
   profileContainer: {
     alignItems: 'center',
     marginVertical: 20,
   },
   avatar: {
-    width: 120,
-    height: 120,
-    tintColor: "#021024",
+    width: 60,
+    height: 60,
+    tintColor: "#420472",
     marginBottom: 10,
   },
   username: {
-    fontSize: 22,
-    fontWeight: '600',
-    color: '#052659',
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#420472',
   },
   card: {
-    backgroundColor: "#7da0ca",
-    margin: 20,
-    borderRadius: 12,
+    backgroundColor: "#ecbcf4",
+    marginTop: 20,
+    borderRadius: 20,
     padding: 15,
-    elevation: 3,
-  },
-  cardTitle: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "#021024",
-    marginBottom: 20,
+    paddingTop: 40,
+    elevation: 5,
+    display: "flex",
+    gap: 10
+
   },
   cardValue: {
     fontSize: 18,
     fontWeight: "600",
     color: "#052659",
-    backgroundColor:"rgb(136, 181, 250)",
-    padding: 5 ,
-    borderRadius: 5
-
+    backgroundColor: "rgb(243, 110, 243)",
+    paddingTop: 20,
+    paddingBottom:20,
+    paddingLeft:10,
+    elevation: 10,
+    borderRadius: 5,
   },
   premiumBtn: {
     backgroundColor: "#021024",

@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Cafe",
-    "slug": "Cafe",
+    "name": "Repromptt",
+    "slug": "repromptt",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -16,7 +16,10 @@
         "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#41221b"
       },
-      "package": "com.harshranjan98.Cafe"
+      "package": "com.repromptt.repromptt",
+      "permissions": [
+
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -24,12 +27,6 @@
       "favicon": "./assets/images/icon.png"
     },
     "plugins": [
-      [
-        "expo-contacts",
-        {
-          "contactsPermission": "Allow $(PRODUCT_NAME) to access your contacts."
-        }
-      ],
       "expo-router",
       [
         "expo-splash-screen",
@@ -59,8 +56,10 @@
     },
     "extra": {
       "eas": {
-        "projectId": "f0654dba-558c-429e-8adf-f40f33b006c1"
-      }
-    }
+        "projectId": "2b0a7836-90e3-4bbc-a431-8a7310bd3fdf"
+      },
+      "router": {}
+    },
+    "owner": "repromptt"
   }
 }

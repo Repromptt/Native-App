@@ -18,6 +18,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import Modal from "react-native-modal";
 import icons from "@/constants/icons";
+import images from "@/constants/images";
+
 
 export default function Index() {
   const router = useRouter();
@@ -26,7 +28,7 @@ export default function Index() {
   const [signupModalVisible, setSignupModalVisible] = useState(false);
   const [signupData, setSignupData] = useState({ name: "", email: "", password: "" });
   const [isLoading, setIsLoading] = useState(true);
-  const baseURL = "https://b716-2409-40e4-200d-dcdc-ddec-a0fd-ce29-1c65.ngrok-free.app/api";
+  const baseURL = "https://reprompttserver.onrender.com/api";
 
   useEffect(() => {
     const checkLogin = async () => {
@@ -101,12 +103,12 @@ export default function Index() {
         style={styles.keyboardView}
       >
         <ScrollView contentContainerStyle={styles.scrollContainer}>
-          <Image source={icons.wallet} style={styles.logo} />
+          <Image source={images.icon} style={styles.logo} />
 
           <Text style={styles.title}>Welcome Back 👋</Text>
           <TextInput
             placeholder="Email"
-            placeholderTextColor="#ccc"
+            placeholderTextColor="#2c0240"
             value={email}
             onChangeText={setEmail}
             style={styles.input}
@@ -115,7 +117,7 @@ export default function Index() {
           />
           <TextInput
             placeholder="Password"
-            placeholderTextColor="#ccc"
+            placeholderTextColor="#2c0240"
             value={password}
             onChangeText={setPassword}
             secureTextEntry
@@ -138,14 +140,14 @@ export default function Index() {
 
           <TextInput
             placeholder="Name"
-            placeholderTextColor="#999"
+            placeholderTextColor="#170549"
             style={styles.input}
             value={signupData.name}
             onChangeText={(text) => setSignupData({ ...signupData, name: text })}
           />
           <TextInput
             placeholder="Email"
-            placeholderTextColor="#999"
+            placeholderTextColor="#170549"
             style={styles.input}
             value={signupData.email}
             onChangeText={(text) => setSignupData({ ...signupData, email: text })}
@@ -154,7 +156,7 @@ export default function Index() {
           />
           <TextInput
             placeholder="Password"
-            placeholderTextColor="#999"
+            placeholderTextColor="#170549"
             secureTextEntry
             style={styles.input}
             value={signupData.password}
@@ -173,7 +175,8 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#052659",
+    backgroundColor :"#2c0240",
+
   },
   keyboardView: {
     flex: 1,
@@ -185,20 +188,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   logo: {
-    width: 60,
-    height: 60,
+    width: 80,
+    height: 80,
     marginBottom: 30,
-    tintColor: "#fff",
   },
   title: {
-    fontSize: 22,
-    color: "#fff",
+    fontSize: 28,
+    color: "#9370f4",
     fontWeight: "600",
     marginBottom: 20,
   },
   input: {
-    backgroundColor: "#113F67",
-    color: "#fff",
+    backgroundColor: "#ccc0ed",
+   
     width: "100%",
     paddingVertical: 14,
     paddingHorizontal: 20,
@@ -207,7 +209,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   button: {
-    backgroundColor: "#1E90FF",
+    backgroundColor: "#6836f1",
     paddingVertical: 14,
     borderRadius: 12,
     width: "100%",
@@ -223,20 +225,20 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   linkText: {
-    color: "#a9c9ff",
+    color: "#ccc0ed",
     fontSize: 14,
     textDecorationLine: "underline",
   },
   modalContainer: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
+    backgroundColor: "#490772",
+    borderRadius: 30,
     padding: 20,
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 15,
-    color: "#052659",
+    color: "#bba8ef",
     textAlign: "center",
   },
 });

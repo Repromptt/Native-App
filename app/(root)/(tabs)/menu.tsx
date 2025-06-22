@@ -94,7 +94,7 @@ function Menu() {
       return;
     }
     const email = encodeURIComponent(user.email);
-    const checkoutURL = `https://buy.stripe.com/test_bJebJ0gCEeOrcy6015grS00?prefilled_email=${email}`;
+    const checkoutURL = `https://buy.stripe.com/dRm00igHeasneC6fet0VO00?prefilled_email=${email}`;
 
     Linking.openURL(checkoutURL).catch(() =>
       Alert.alert("Error", "Failed to open payment link.")
@@ -113,7 +113,7 @@ function Menu() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+      <ScrollView >
         <View style={styles.header}>
           <Text style={styles.headerText}>Repromptt {user.isPremium ? "👑" : ""}</Text>
           <TouchableOpacity onPress={() => router.push(`/explore`)} style={styles.profileButton}>
@@ -149,96 +149,116 @@ function Menu() {
 
 const styles = StyleSheet.create({
   safeArea: {
-    backgroundColor: '#eddbf8',
-    flex: 1
+    flex: 1,
+    backgroundColor: "#f6f0ff", // soft lavender background
   },
   profileButton: {
     padding: 10,
-    borderRadius: 8,
+    borderRadius: 10,
+    backgroundColor: "#ffffff",
+    shadowColor: "#aaa",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 2,
   },
   profileIcon: {
     width: 36,
     height: 36,
-    tintColor: "#021024",
+    tintColor: "#5b3ba3", // soft professional purple
   },
   header: {
-    backgroundColor: '#cc95f8',
-    padding: 15,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    backgroundColor: "#e6d6ff", // lighter header with pastel purple
+    paddingVertical: 18,
+    paddingHorizontal: 20,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     borderBottomRightRadius: 20,
-    borderBottomLeftRadius: 20
+    borderBottomLeftRadius: 20,
+    shadowColor: "#bbb",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 3,
   },
   headerText: {
-    fontSize: 30,
-    fontWeight: '800',
-    color: "#420472"
+    fontSize: 28,
+    fontWeight: "700",
+    color: "#4e2c86",
   },
   profileContainer: {
-    alignItems: 'center',
-    marginVertical: 20,
+    alignItems: "center",
+    marginVertical: 24,
   },
   avatar: {
-    width: 60,
-    height: 60,
-    tintColor: "#420472",
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: "#f2e9ff",
+    tintColor: "#5b3ba3",
     marginBottom: 10,
   },
   username: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#420472',
+    fontSize: 26,
+    fontWeight: "700",
+    color: "#4e2c86",
   },
   card: {
-    backgroundColor: "#ecbcf4",
+    backgroundColor: "#f1e7ff",
     marginTop: 20,
-    borderRadius: 20,
-    padding: 15,
-    paddingTop: 40,
-    elevation: 5,
-    display: "flex",
-    gap: 10
-
+    marginHorizontal: 20,
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: "#ccc",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 4,
   },
   cardValue: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#052659",
-    backgroundColor: "rgb(243, 110, 243)",
-    paddingTop: 20,
-    paddingBottom:20,
-    paddingLeft:10,
-    elevation: 10,
-    borderRadius: 5,
-  },
-  premiumBtn: {
-    backgroundColor: "#021024",
-    marginHorizontal: 20,
-    padding: 12,
-    borderRadius: 8,
-    alignItems: "center",
+    color: "#2d1a4f",
+    backgroundColor: "#e8d7fc",
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+    borderRadius: 10,
     marginTop: 10,
   },
-  logoutBtn: {
-    backgroundColor: "#052659",
+  premiumBtn: {
+    backgroundColor: "#7a5af5",
     marginHorizontal: 20,
-    padding: 12,
-    borderRadius: 8,
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: "center",
+    marginTop: 12,
+    shadowColor: "#7a5af5",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  logoutBtn: {
+    backgroundColor: "#5b3ba3",
+    marginHorizontal: 20,
+    paddingVertical: 14,
+    borderRadius: 10,
     alignItems: "center",
     marginTop: 20,
   },
   btnText: {
     color: "#fff",
-    fontWeight: "bold",
     fontSize: 16,
+    fontWeight: "600",
   },
   centered: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#c1e8ff",
+    backgroundColor: "#f2eaff",
   },
 });
+
 
 export default Menu;

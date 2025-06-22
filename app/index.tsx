@@ -19,6 +19,7 @@ import { useRouter } from "expo-router";
 import Modal from "react-native-modal";
 import icons from "@/constants/icons";
 import images from "@/constants/images";
+import { LinearGradient } from 'expo-linear-gradient';
 
 
 export default function Index() {
@@ -97,7 +98,16 @@ export default function Index() {
   }
 
   return (
+   
     <SafeAreaView style={styles.container}>
+       <LinearGradient
+   colors={["#0f051d", "#3b0c59", "#833ab4", "#b95dd3", "#2d0039"]}
+  start={{ x: 0.2, y: 0.5 }}
+  end={{ x: 0.7, y: 1.1 }}
+  locations={[0, 0.3, 0.55, 0.75, 1]}
+  style={styles.container}
+
+>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardView}
@@ -108,7 +118,7 @@ export default function Index() {
           <Text style={styles.title}>Welcome Back 👋</Text>
           <TextInput
             placeholder="Email"
-            placeholderTextColor="#2c0240"
+            placeholderTextColor="white"
             value={email}
             onChangeText={setEmail}
             style={styles.input}
@@ -117,7 +127,7 @@ export default function Index() {
           />
           <TextInput
             placeholder="Password"
-            placeholderTextColor="#2c0240"
+            placeholderTextColor="white"
             value={password}
             onChangeText={setPassword}
             secureTextEntry
@@ -140,14 +150,14 @@ export default function Index() {
 
           <TextInput
             placeholder="Name"
-            placeholderTextColor="#170549"
+            placeholderTextColor="#ffe"
             style={styles.input}
             value={signupData.name}
             onChangeText={(text) => setSignupData({ ...signupData, name: text })}
           />
           <TextInput
             placeholder="Email"
-            placeholderTextColor="#170549"
+            placeholderTextColor="#ffe"
             style={styles.input}
             value={signupData.email}
             onChangeText={(text) => setSignupData({ ...signupData, email: text })}
@@ -156,7 +166,7 @@ export default function Index() {
           />
           <TextInput
             placeholder="Password"
-            placeholderTextColor="#170549"
+            placeholderTextColor="#ffe"
             secureTextEntry
             style={styles.input}
             value={signupData.password}
@@ -168,77 +178,96 @@ export default function Index() {
           </TouchableOpacity>
         </View>
       </Modal>
+       </LinearGradient>
     </SafeAreaView>
+   
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor :"#2c0240",
-
+    backgroundColor: "#1f0136",
   },
   keyboardView: {
     flex: 1,
   },
   scrollContainer: {
     width: "100%",
-    paddingHorizontal: 30,
-    paddingTop: 80,
+    paddingHorizontal: 28,
+    paddingTop: 70,
     alignItems: "center",
   },
   logo: {
-    width: 80,
-    height: 80,
-    marginBottom: 30,
+    width: 90,
+    height: 90,
+    marginBottom: 25,
+    borderRadius: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 5,
+    elevation: 5,
   },
   title: {
-    fontSize: 28,
-    color: "#9370f4",
-    fontWeight: "600",
-    marginBottom: 20,
+    fontSize: 30,
+    color: "#e0d7ff",
+    fontWeight: "700",
+    marginBottom: 30,
   },
   input: {
-    backgroundColor: "#ccc0ed",
-   
+    backgroundColor: "rgba(255, 255, 255, 0.08)",
+    borderColor: "#7a4df1",
+    borderWidth: 1,
     width: "100%",
     paddingVertical: 14,
     paddingHorizontal: 20,
-    borderRadius: 12,
-    marginBottom: 15,
+    borderRadius: 14,
+    marginBottom: 16,
     fontSize: 16,
+    color: "#fff",
   },
   button: {
-    backgroundColor: "#6836f1",
-    paddingVertical: 14,
-    borderRadius: 12,
+    backgroundColor: "#7a4df1",
+    paddingVertical: 16,
+    borderRadius: 14,
     width: "100%",
     alignItems: "center",
-    marginTop: 10,
+    marginTop: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 5,
   },
   buttonText: {
     color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
+    fontWeight: "600",
+    fontSize: 17,
   },
   linkButton: {
-    marginTop: 20,
+    marginTop: 25,
   },
   linkText: {
-    color: "#ccc0ed",
-    fontSize: 14,
+    color: "#ae9af0",
+    fontSize: 15,
     textDecorationLine: "underline",
   },
   modalContainer: {
-    backgroundColor: "#490772",
-    borderRadius: 30,
-    padding: 20,
+    backgroundColor: "#2a0052",
+    borderRadius: 24,
+    padding: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    elevation: 10,
   },
   modalTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 15,
-    color: "#bba8ef",
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 20,
+    color: "#dfd6fc",
     textAlign: "center",
   },
 });

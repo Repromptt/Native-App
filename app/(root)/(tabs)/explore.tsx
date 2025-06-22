@@ -9,6 +9,7 @@ import * as Clipboard from 'expo-clipboard';
 import Constants from 'expo-constants';
 import axios from 'axios';
 import moment from "moment";
+import { LinearGradient } from 'expo-linear-gradient';
 
 const Explore = () => {
   const router = useRouter();
@@ -118,6 +119,7 @@ const Explore = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+       
       <ScrollView contentContainerStyle={styles.scrollView}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Repromptt </Text>
@@ -179,143 +181,150 @@ const PromptCard = ({ text, onCopy }) => (
 
 const styles = StyleSheet.create({
   safeArea: {
-    backgroundColor: '#eddbf8',
-    flex: 1
+    flex: 1,
+    backgroundColor: "#f6f0ff", // soft lavender
   },
   scrollView: {
-    paddingBottom: 40
+    paddingBottom: 40,
   },
   header: {
-    backgroundColor: '#cc95f8',
-    padding: 15,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    backgroundColor: "#e6d6ff", // very light purple
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
-    borderBottomLeftRadius: 20
+    shadowColor: "#aaa",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
   },
   headerTitle: {
-    fontSize: 30,
-    fontWeight: '800',
-    color: "#420472"
-
-  },
-  userRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center'
-  },
-  welcomeText: {
-    fontSize: 30,
-    fontWeight: 600,
-    fontStyle:"italic",
-    paddingLeft: 10,
-    padding: 20,
-    color: "#052659",
-    marginBottom:10
+    fontSize: 28,
+    fontWeight: "700",
+    color: "#5b3ba3", // professional purple
   },
   profileButton: {
-    padding: 10,
-    borderRadius: 8,
-    borderBlockColor:"#fff",
+    padding: 8,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    elevation: 2,
   },
   profileIcon: {
-    width: 36,
-    height: 36,
-    tintColor: "#021024",
-    borderColor: "fff"
+    width: 32,
+    height: 32,
+    tintColor: "#5b3ba3",
+  },
+  userRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    padding: 20,
+  },
+  welcomeText: {
+    fontSize: 22,
+    fontWeight: "600",
+    color: "#333",
+    fontStyle: "italic",
   },
   container: {
-    paddingHorizontal: 16
+    paddingHorizontal: 20,
   },
   label: {
     fontSize: 18,
-    fontWeight: 500,
-    color: "#420472",
-    marginBottom: 6
+    fontWeight: "600",
+    color: "#5b3ba3",
+    marginBottom: 8,
   },
   input: {
-    backgroundColor: "#fff",
-    padding: 12,
-    borderRadius: 8,
+    backgroundColor: "#ffffff",
+    padding: 14,
+    borderRadius: 10,
     borderColor: "#ccc",
     borderWidth: 1,
-    textAlignVertical: 'top',
-    minHeight: 80
+    fontSize: 16,
+    minHeight: 90,
+    color: "#212121",
+    textAlignVertical: "top",
   },
   button: {
-    backgroundColor: "#052659",
-    padding: 15,
-    marginTop: 12,
-    borderRadius: 8,
-    alignItems: "center"
+    backgroundColor: "#7a5af5",
+    paddingVertical: 16,
+    borderRadius: 10,
+    alignItems: "center",
+    marginTop: 16,
   },
   buttonText: {
     color: "#fff",
-    fontWeight: "bold"
+    fontSize: 16,
+    fontWeight: "600",
   },
   loader: {
-    marginTop: 20
+    marginTop: 20,
   },
   resultsContainer: {
     marginTop: 30,
-    padding:20,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    backgroundColor:"#be76f8",
+    backgroundColor: "#f2eaff",
+    padding: 20,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    shadowColor: "#aaa",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: "bold",
-    color: "#052659",
-    marginBottom: 10
+    fontWeight: "700",
+    color: "#4a2f7c",
+    marginBottom: 12,
   },
   correctedItem: {
-    marginTop: 20
+    marginBottom: 20,
   },
   promptCard: {
-    backgroundColor: "#eddbf8",
-    padding: 12,
-    borderTopRightRadius: 8,
-    borderTopLeftRadius: 8,
-    position: "relative"
+    backgroundColor: "#fff",
+    padding: 14,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#ddd",
   },
   promptText: {
-    fontSize: 18,
-    color: "#000"
+    fontSize: 16,
+    color: "#212121",
   },
   copyButton: {
-    position: "absolute",
-    top: -40,
-    right: 10,
-    backgroundColor: "#052659",
-    margin: 3,
+    marginTop: 10,
+    alignSelf: "flex-end",
+    backgroundColor: "#9370f4",
     paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 6
+    paddingVertical: 6,
+    borderRadius: 6,
   },
   copyText: {
     color: "#fff",
-    fontSize: 12
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  learningText: {
+    marginTop: 10,
+    padding: 12,
+    backgroundColor: "#efe2ff",
+    borderRadius: 10,
+    fontSize: 16,
+    color: "#4c2d84",
+    fontWeight: "700",
   },
   learningText2: {
+    color: "#4c2d84",
     fontSize: 14,
-    fontWeight: 600,
-    color: "#3f0449"
+    fontWeight: "500",
   },
-   learningText: {
-     backgroundColor:"#ecbcf4",
-     borderColor: "#820696",
-     borderStyle:"solid",
-     borderWidth: 1.5,
-     borderBottomLeftRadius: 10,
-     borderBottomRightRadius: 10,
-     marginBottom:18,
-     padding:14,
-    fontSize: 18,
-    color: "#820896",
-    fontWeight: 800,
-  }
 });
+
 
 export default Explore;

@@ -9,7 +9,11 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.repromptt.repromptt",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -17,9 +21,7 @@
         "backgroundColor": "#e7bbf4"
       },
       "package": "com.repromptt.repromptt",
-      "permissions": [
-
-      ]
+      "permissions": []
     },
     "web": {
       "bundler": "metro",

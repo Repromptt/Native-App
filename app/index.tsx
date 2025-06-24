@@ -1,273 +1,209 @@
-// Updated React Native login/signup screen using backend at http://localhost:3000
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  Alert,
-  ScrollView,
+  View,
   Text,
   TouchableOpacity,
-  View,
-  Image,
-  TextInput,
-  ActivityIndicator,
   StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
+  Image,
+  Dimensions,
+  ActivityIndicator,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import Modal from "react-native-modal";
-import icons from "@/constants/icons";
+import { LinearGradient } from "expo-linear-gradient";
 import images from "@/constants/images";
-import { LinearGradient } from 'expo-linear-gradient';
+
+const slides = [
+  {
+    title: "RePromptt",
+    description: "Your smart assistant to improve and fix any prompt, easily.",
+    image: images.icon,
+  },
+  {
+    title: "Write or Speak",
+    description: "Type or say any prompt — even if it's incomplete or unclear.",
+    image: images.avatar,
+  },
+  {
+    title: "Get the Best Version",
+    description: "RePromptt rewrites your prompt to make it clear and effective — ready to copy and use.",
+    image: images.japan,
+  },
+  {
+    title: "Learn Prompting",
+    description: "Get quick tips and insights from your prompts to help you improve over time.",
+    image: images.onboarding,
+  },
+];
 
 
 export default function Index() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [signupModalVisible, setSignupModalVisible] = useState(false);
-  const [signupData, setSignupData] = useState({ name: "", email: "", password: "" });
   const [isLoading, setIsLoading] = useState(true);
-  const baseURL = "https://reprompttserver.onrender.com/api";
+  const [currentSlide, setCurrentSlide] = useState(-1); // -1 = Get Started
 
   useEffect(() => {
-    const checkLogin = async () => {
-      const token = await AsyncStorage.getItem("user");
+    const checkFirstTime = async () => {
+      const token = await AsyncStorage.getItem("FirstTime");
       if (token) {
         router.replace("/explore");
       } else {
         setIsLoading(false);
       }
     };
-    checkLogin();
+    checkFirstTime();
   }, []);
 
-  const handleLogin = async () => {
-    try {
-      const response = await fetch(`${baseURL}/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await response.json();
-
-      if (response.ok) {
-        await AsyncStorage.setItem("user", JSON.stringify(data));
-        await AsyncStorage.setItem("lastDate", new Date().toDateString());
-        await AsyncStorage.setItem("count", "0");
-        router.replace("/explore");
-      } else {
-        Alert.alert("Login Failed", data.error || "Invalid credentials");
-      }
-    } catch (error) {
-      Alert.alert("Login Failed", "Unable to connect to server.");
-      console.error("Login error", error);
-    }
-  };
-
-  const handleSignup = async () => {
-    const { name, email, password } = signupData;
-    try {
-      const response = await fetch(`${baseURL}/signup`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
-      });
-      const data = await response.json();
-
-      if (response.ok) {
-        await AsyncStorage.setItem("user", JSON.stringify(data));
-        setSignupModalVisible(false);
-        router.replace("/explore");
-      } else {
-        Alert.alert("Signup Failed", data.error || "Could not create account");
-      }
-    } catch (error) {
-      Alert.alert("Signup Failed", "Unable to connect to server.");
-      console.error("Signup error", error);
+  const handleNext = async () => {
+    if (currentSlide < slides.length - 1) {
+      setCurrentSlide(currentSlide + 1);
+    } else {
+      await AsyncStorage.setItem("FirstTime", "1");
+      router.replace("/explore");
     }
   };
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.centered}>
         <ActivityIndicator size="large" color="#fff" />
       </SafeAreaView>
     );
   }
 
-  return (
-   
-    <SafeAreaView style={styles.container}>
-       <LinearGradient
-   colors={["#0f051d", "#3b0c59", "#833ab4", "#b95dd3", "#2d0039"]}
-  start={{ x: 0.2, y: 0.5 }}
-  end={{ x: 0.7, y: 1.1 }}
-  locations={[0, 0.3, 0.55, 0.75, 1]}
-  style={styles.container}
-
->
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.keyboardView}
+  if (currentSlide === -1) {
+    return (
+      <LinearGradient
+        colors={["#0f051d", "#3b0c59", "#833ab4"]}
+        style={styles.container}
       >
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <SafeAreaView style={styles.centered}>
           <Image source={images.icon} style={styles.logo} />
-
-          <Text style={styles.title}>Welcome Back 👋</Text>
-          <TextInput
-            placeholder="Email"
-            placeholderTextColor="white"
-            value={email}
-            onChangeText={setEmail}
-            style={styles.input}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-          <TextInput
-            placeholder="Password"
-            placeholderTextColor="white"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            style={styles.input}
-          />
-
-          <TouchableOpacity onPress={handleLogin} style={styles.button}>
-            <Text style={styles.buttonText}>Login</Text>
+          <Text style={styles.welcome}>RePromptt</Text>
+          <TouchableOpacity style={styles.startButton} onPress={() => setCurrentSlide(0)}>
+            <Text style={styles.buttonText}>Get Started</Text>
           </TouchableOpacity>
+        </SafeAreaView>
+      </LinearGradient>
+    );
+  }
 
-          <TouchableOpacity onPress={() => setSignupModalVisible(true)} style={styles.linkButton}>
-            <Text style={styles.linkText}>Don't have an account? Sign Up</Text>
-          </TouchableOpacity>
-        </ScrollView>
-      </KeyboardAvoidingView>
+  const { title, description, image } = slides[currentSlide];
 
-      <Modal isVisible={signupModalVisible} onBackdropPress={() => setSignupModalVisible(false)}>
-        <View style={styles.modalContainer}>
-          <Text style={styles.modalTitle}>Create Account</Text>
+return (
+  <LinearGradient
+    colors={["#0f051d", "#3b0c59", "#833ab4", "#b95dd3", "#2d0039"]}
+    start={{ x: 0.2, y: 0.5 }}
+    end={{ x: 0.7, y: 1.1 }}
+    style={styles.container}
+  >
+    <SafeAreaView style={styles.slide}>
+      <Image source={image} style={styles.slideImage} />
+      <Text style={styles.slideTitle}>{title}</Text>
+      <Text style={styles.slideDesc}>{description}</Text>
 
-          <TextInput
-            placeholder="Name"
-            placeholderTextColor="#ffe"
-            style={styles.input}
-            value={signupData.name}
-            onChangeText={(text) => setSignupData({ ...signupData, name: text })}
-          />
-          <TextInput
-            placeholder="Email"
-            placeholderTextColor="#ffe"
-            style={styles.input}
-            value={signupData.email}
-            onChangeText={(text) => setSignupData({ ...signupData, email: text })}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-          <TextInput
-            placeholder="Password"
-            placeholderTextColor="#ffe"
-            secureTextEntry
-            style={styles.input}
-            value={signupData.password}
-            onChangeText={(text) => setSignupData({ ...signupData, password: text })}
-          />
+      <View style={styles.buttonRow}>
+        <TouchableOpacity
+          style={[styles.backButton, currentSlide === 0 && { opacity: 0 }]}
+          disabled={currentSlide === 0}
+          onPress={() => setCurrentSlide(currentSlide - 1)}
+        >
+          <Text style={styles.buttonText}>Back</Text>
+        </TouchableOpacity>
 
-          <TouchableOpacity onPress={handleSignup} style={styles.button}>
-            <Text style={styles.buttonText}>Sign Up</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
-       </LinearGradient>
+        <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
+          <Text style={styles.buttonText}>
+            {currentSlide === slides.length - 1 ? "Continue" : "Next"}
+          </Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
-   
-  );
+  </LinearGradient>
+);
+
 }
+
+const { width, height } = Dimensions.get("window");
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#1f0136",
   },
-  keyboardView: {
+  centered: {
     flex: 1,
-  },
-  scrollContainer: {
-    width: "100%",
-    paddingHorizontal: 28,
-    paddingTop: 70,
     alignItems: "center",
+    justifyContent: "center",
   },
   logo: {
-    width: 90,
-    height: 90,
+    width: 120,
+    height: 120,
     marginBottom: 25,
     borderRadius: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4,
-    shadowRadius: 5,
-    elevation: 5,
   },
-  title: {
-    fontSize: 30,
-    color: "#e0d7ff",
-    fontWeight: "700",
-    marginBottom: 30,
-  },
-  input: {
-    backgroundColor: "rgba(255, 255, 255, 0.08)",
-    borderColor: "#7a4df1",
-    borderWidth: 1,
-    width: "100%",
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderRadius: 14,
-    marginBottom: 16,
-    fontSize: 16,
+  welcome: {
+    fontSize: 26,
     color: "#fff",
+    fontWeight: "700",
+    marginBottom: 40,
   },
-  button: {
+  startButton: {
     backgroundColor: "#7a4df1",
     paddingVertical: 16,
-    borderRadius: 14,
-    width: "100%",
-    alignItems: "center",
-    marginTop: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
+    paddingHorizontal: 32,
+    borderRadius: 20,
     elevation: 5,
+  },
+  slide: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 28,
+  },
+  slideImage: {
+    width: width * 0.9,
+    height: width * 0.9,
+    marginBottom: 40,
+    borderRadius: 20,
+  },
+  slideTitle: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#fff",
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  slideDesc: {
+    fontSize: 16,
+    color: "#e0d7ff",
+    textAlign: "center",
+    marginBottom: 40,
+  },
+  nextButton: {
+    backgroundColor: "#7a3aff",
+    paddingVertical: 14,
+    paddingHorizontal: 30,
+    borderRadius: 16,
+    elevation: 4,
   },
   buttonText: {
     color: "#fff",
+    fontSize: 16,
     fontWeight: "600",
-    fontSize: 17,
   },
-  linkButton: {
-    marginTop: 25,
-  },
-  linkText: {
-    color: "#ae9af0",
-    fontSize: 15,
-    textDecorationLine: "underline",
-  },
-  modalContainer: {
-    backgroundColor: "#2a0052",
-    borderRadius: 24,
-    padding: 24,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 10,
-    elevation: 10,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    marginBottom: 20,
-    color: "#dfd6fc",
-    textAlign: "center",
-  },
+  buttonRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  width: "100%",
+  paddingHorizontal: 20,
+},
+backButton: {
+  backgroundColor: "#7a3adf",
+  paddingVertical: 14,
+  paddingHorizontal: 30,
+  borderRadius: 16,
+  elevation: 4,
+  marginRight: 10,
+},
+
 });

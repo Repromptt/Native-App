@@ -21,24 +21,25 @@ const Explore = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [dailyCount, setDailyCount] = useState(0);
 
-  useEffect(() => {
-    const checkLogin = async () => {
-      try {
-        const userData = await AsyncStorage.getItem("user");
-        if (!userData) {
-          router.replace("/");
-        } else {
-          const user = JSON.parse(userData);
-          setUserId(user.name);
-          setIsPremium(user.isPremium);
-          setIsLoading(false);
-        }
-      } catch (error) {
-        console.error("Error checking login:", error);
-      }
-    };
-    checkLogin();
-  }, []);
+
+  // useEffect(() => {
+  //   const checkLogin = async () => {
+  //     try {
+  //       const userData = await AsyncStorage.getItem("user");
+  //       if (!userData) {
+  //         router.replace("/");
+  //       } else {
+  //         const user = JSON.parse(userData);
+  //         setUserId(user.name);
+  //         setIsPremium(user.isPremium);
+  //         setIsLoading(false);
+  //       }
+  //     } catch (error) {
+  //       console.error("Error checking login:", error);
+  //     }
+  //   };
+  //   checkLogin();
+  // }, []);
 
   useEffect(() => {
     const resetCountIfNewDay = async () => {
@@ -129,7 +130,7 @@ const Explore = () => {
         </View>
 
         <View style={styles.userRow}>
-          <Text style={styles.welcomeText}> Welcome {userId}</Text>
+          <Text style={styles.welcomeText}> </Text>
         </View>
 
         <View style={styles.container}>

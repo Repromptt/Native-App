@@ -27,11 +27,9 @@ function Menu() {
     const fetchUser = async () => {
       try {
         const value = await AsyncStorage.getItem("user");
-        const countValue = await AsyncStorage.getItem("count");
         if (value !== null) {
           const userData = JSON.parse(value);
           setUser(userData);
-          setPromptCount(parseInt(countValue || "0", 10));
         }
       } catch (e) {
         console.error("Failed to fetch user:", e);
@@ -44,6 +42,7 @@ function Menu() {
     const fetchLatestUserInfo = async () => {
       try {
         const value = await AsyncStorage.getItem("user");
+        const fcount= await AsyncStorage.getItem("pcount");
         if (value !== null) {
           const userData = JSON.parse(value);
           const response = await fetch("https://reprompttserver.onrender.com/api/get-info", {
@@ -72,7 +71,8 @@ function Menu() {
 
   const handleLogout = async () => {
     try {
-      await AsyncStorage.clear();
+      await AsyncStorage.removeItem("user");
+       await AsyncStorage.removeItem("FirstTime");
       Alert.alert("Logged Out", "You have been logged out.");
       router.replace("/");
     } catch (error) {
@@ -127,7 +127,7 @@ function Menu() {
   );
 
   const renderUserView = () => {
-    const promptLeft = user.isPremium ? "Unlimited" : `${Math.max(0, 2 - promptCount)} remaining`;
+    const promptLeft = user.isPremium ? "Unlimited" : `${Math.max(0, 2 - user?.count)} remaining`;
 
     return (
       <ScrollView contentContainerStyle={styles.scrollContainer}>

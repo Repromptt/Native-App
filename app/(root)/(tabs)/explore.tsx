@@ -1,45 +1,54 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert, ActivityIndicator, Image, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert, ActivityIndicator, Image, StyleSheet, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Modal from 'react-native-modal';
 import { useRouter } from "expo-router";
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import icons from "@/constants/icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Clipboard from 'expo-clipboard';
 import Constants from 'expo-constants';
-import axios from 'axios';
-import moment from "moment";
-import { LinearGradient } from 'expo-linear-gradient';
 
 const Explore = () => {
   const router = useRouter();
-  const [userId, setUserId] = useState(null);
-  const [isPremium, setIsPremium] = useState(false);
+  const [user, setUser] = useState(null);
+  const [guestCount, setGuestCount] = useState(0);
   const [inputPrompt, setInputPrompt] = useState('');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [dailyCount, setDailyCount] = useState(0);
+  const [selectedPrompt, setSelectedPrompt] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const value = await AsyncStorage.getItem("user");
+        if (value !== null) {
+          const userData = JSON.parse(value);
+          setUser(userData);
+        }
+      } catch (e) {
+        console.error("Failed to fetch user:", e);
+      }
+    };
+    fetchUser();
+  }, []);
 
-  // useEffect(() => {
-  //   const checkLogin = async () => {
-  //     try {
-  //       const userData = await AsyncStorage.getItem("user");
-  //       if (!userData) {
-  //         router.replace("/");
-  //       } else {
-  //         const user = JSON.parse(userData);
-  //         setUserId(user.name);
-  //         setIsPremium(user.isPremium);
-  //         setIsLoading(false);
-  //       }
-  //     } catch (error) {
-  //       console.error("Error checking login:", error);
-  //     }
-  //   };
-  //   checkLogin();
-  // }, []);
+  useEffect(() => {
+    const fetchGuestCount = async () => {
+      try {
+        const vali = await AsyncStorage.getItem("pcount");
+        if (vali === null) {
+          await AsyncStorage.setItem("pcount", "0");
+          setGuestCount(0);
+        } else {
+          setGuestCount(parseInt(vali, 10));
+        }
+      } catch (e) {
+        console.error("Failed to fetch guest count:", e);
+      }
+    };
+    fetchGuestCount();
+  }, []);
 
   useEffect(() => {
     const resetCountIfNewDay = async () => {
@@ -48,12 +57,8 @@ const Explore = () => {
         const lastDate = await AsyncStorage.getItem("lastDate");
 
         if (lastDate !== today) {
-          await AsyncStorage.setItem("count", "0");
+          await AsyncStorage.setItem("pcount", "0");
           await AsyncStorage.setItem("lastDate", today);
-          setDailyCount(0);
-        } else {
-          const currentCount = await AsyncStorage.getItem("count");
-          setDailyCount(parseInt(currentCount || '0'));
         }
       } catch (error) {
         console.error("Error resetting count:", error);
@@ -63,47 +68,34 @@ const Explore = () => {
   }, []);
 
   const handleGenerate = async () => {
-    if (!inputPrompt) {
-      Alert.alert("Error", "Please enter a prompt first.");
-      return;
-    }
-
-    if (!isPremium && dailyCount >= 2) {
-      Alert.alert("Limit Reached", "Free users can only generate 2 prompts per day. Upgrade to Premium for unlimited access.");
-      return;
-    }
+    if (!inputPrompt) return Alert.alert("Error", "Please enter a prompt first.");
+    if (user !== null && !user.isPremium && user.count >= 2)
+      return Alert.alert("Limit Reached", "Free users can only generate 2 prompts per day.");
+    if (user == null && guestCount >= 2)
+      return Alert.alert("Limit Reached", "Signup for more.");
 
     setLoading(true);
     setResults(null);
+    const gmail = user?.email || "t@gmail.com";
 
     try {
       const response = await fetch("https://reprompttserver.onrender.com/api/correct-prompt", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ inputPrompt }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ gmail, inputPrompt }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Something went wrong");
-      }
+      if (!response.ok) throw new Error((await response.json()).error || "Something went wrong");
 
       const data = await response.json();
       setInputPrompt('');
+      setResults({ original: inputPrompt, corrected: data.correctedPrompt || [] });
 
-      setResults({
-        original: inputPrompt,
-        corrected: data.correctedPrompt || [],
-      });
-
-      if (!isPremium) {
-        const newCount = dailyCount + 1;
-        setDailyCount(newCount);
-        await AsyncStorage.setItem("count", newCount.toString());
+      if (user == null) {
+        const newCount = guestCount + 1;
+        setGuestCount(newCount);
+        await AsyncStorage.setItem("pcount", newCount.toString());
       }
-
     } catch (error) {
       console.error("Error generating prompt:", error.message);
       Alert.alert("Error", "Failed to generate prompt. Please try again.");
@@ -112,24 +104,33 @@ const Explore = () => {
     }
   };
 
-
   const handleCopy = async (text) => {
     await Clipboard.setStringAsync(text);
-    //Alert.alert("Copied", "Prompt copied to clipboard.");
+  };
+
+  const openSearchModal = (text) => {
+    setSelectedPrompt(text);
+    setModalVisible(true);
+  };
+
+  const handleSearch = (engineUrl) => {
+    if (selectedPrompt) {
+      const query = encodeURIComponent(selectedPrompt);
+      Linking.openURL(`${engineUrl}${query}`);
+      setModalVisible(false);
+    }
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-       
       <ScrollView contentContainerStyle={styles.scrollView}>
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Repromptt </Text>
+          <Text style={styles.headerTitle}>Repromptt</Text>
           <TouchableOpacity onPress={() => router.push(`/menu`)} style={styles.profileButton}>
             <Image source={icons.person} style={styles.profileIcon} />
           </TouchableOpacity>
         </View>
-
-        <View style={styles.userRow}>
+          <View style={styles.userRow}>
           <Text style={styles.welcomeText}> </Text>
         </View>
 
@@ -145,40 +146,61 @@ const Explore = () => {
           <TouchableOpacity onPress={handleGenerate} style={styles.button}>
             <Text style={styles.buttonText}>Generate</Text>
           </TouchableOpacity>
-
           {loading && <ActivityIndicator size="large" color="#052659" style={styles.loader} />}
-
-         
         </View>
-         {results && (
-            <View style={styles.resultsContainer}>
-             
-              {results.corrected.map((item, index) => (
-                <View key={index} style={styles.correctedItem}>
-                  <Text style={styles.sectionTitle}>Corrected Prompt {index + 1}</Text>
-                  <PromptCard text={item.prompt} onCopy={() => handleCopy(item.prompt)} />
-                  <Text style={styles.learningText}>💡Learning-{"\n"}
-                    <Text style={styles.learningText2}>{item.learning}</Text></Text>
-                </View>
-              ))}
-               <Text style={styles.sectionTitle}>Original Prompt</Text>
-              <PromptCard text={results.original} onCopy={() => handleCopy(results.original)} />
 
-            </View>
-          )}
+        {results && (
+          <View style={styles.resultsContainer}>
+            {results.corrected.map((item, index) => (
+              <View key={index} style={styles.correctedItem}>
+                <Text style={styles.sectionTitle}>Corrected Prompt {index + 1}</Text>
+                <PromptCard text={item.prompt} onCopy={() => handleCopy(item.prompt)} onSearch={() => openSearchModal(item.prompt)} />
+                <Text style={styles.learningText}>💡Learning-{"\n"}<Text style={styles.learningText2}>{item.learning}</Text></Text>
+              </View>
+            ))}
+            <Text style={styles.sectionTitle}>Original Prompt</Text>
+            <PromptCard text={results.original} onCopy={() => handleCopy(results.original)} onSearch={() => openSearchModal(results.original)} />
+          </View>
+        )}
+
+        <Modal isVisible={modalVisible} onBackdropPress={() => setModalVisible(false)}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Search with</Text>
+            <TouchableOpacity onPress={() => handleSearch("https://chat.openai.com/?q=")} style={styles.button}>
+              <Text style={styles.buttonText}>ChatGPT</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => handleSearch("https://gemini.google.com/?q=")} style={styles.button}>
+              <Text style={styles.buttonText}>Gemini</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => handleSearch("https://x.ai/search?q=")} style={styles.button}>
+              <Text style={styles.buttonText}>Grok</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => handleSearch("https://copilot.microsoft.com/?q=")} style={styles.button}>
+              <Text style={styles.buttonText}>Copilot</Text>
+            </TouchableOpacity>
+          </View>
+        </Modal>
       </ScrollView>
     </SafeAreaView>
   );
 };
 
-const PromptCard = ({ text, onCopy }) => (
+const PromptCard = ({ text, onCopy, onSearch }) => (
   <View style={styles.promptCard}>
-    <Text style={styles.promptText}>"{text}"</Text>
-    <TouchableOpacity onPress={onCopy} style={styles.copyButton}>
-      <Text style={styles.copyText}>Copy</Text>
-    </TouchableOpacity>
+    <Text style={styles.promptText}>
+      "{text}"
+    </Text>
+    <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 8, marginTop: 10 }}>
+      <TouchableOpacity onPress={onCopy} style={styles.copyButton}>
+        <Text style={styles.copyText}>Copy</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => onSearch(text)} style={styles.copyButton}>
+        <Text style={styles.copyText}>Try it</Text>
+      </TouchableOpacity>
+    </View>
   </View>
 );
+
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -187,6 +209,24 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     paddingBottom: 40,
+  },
+  modalContainer: {
+    backgroundColor: "#e6d6ff",
+    borderRadius: 24,
+    padding: 24,
+    margin:18,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    elevation: 10,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 20,
+    color: "#5b3ba3",
+    textAlign: "center",
   },
   header: {
     backgroundColor: "#e6d6ff", // very light purple

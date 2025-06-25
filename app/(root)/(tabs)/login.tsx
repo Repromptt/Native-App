@@ -63,7 +63,7 @@ export default function Login() {
       if (response.ok) {
         await AsyncStorage.setItem("user", JSON.stringify(data));
         await AsyncStorage.setItem("lastDate", new Date().toDateString());
-        await AsyncStorage.setItem("count", "0");
+       // await AsyncStorage.setItem("count", "0");
         router.replace("/explore");
       } else {
         Alert.alert("Login Failed", data.error || "Invalid credentials");

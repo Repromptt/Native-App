@@ -12,7 +12,13 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.repromptt.repromptt",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSContactsUsageDescription": "This app may request access to your contacts due to third-party features. We do not store or misuse your data.",
+        "NSCameraUsageDescription": "This app uses the camera to take photos.",
+        "NSMicrophoneUsageDescription": "This app uses the microphone for voice features.",
+        "NSLocationWhenInUseUsageDescription": "This app uses location to enhance your experience."
+
+
       }
     },
     "android": {

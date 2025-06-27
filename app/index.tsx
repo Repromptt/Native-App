@@ -13,29 +13,31 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import images from "@/constants/images";
+import * as Updates from 'expo-updates';
 
 const slides = [
   {
-    title: "RePromptt",
-    description: "Your smart assistant to improve and fix any prompt, easily.",
+    title: "Welcome to RePromptt",
+    description: "Your personal AI assistant that rewrites, improves, and fixes any prompt — instantly and effortlessly.",
     image: images.icon,
   },
   {
-    title: "Write or Speak",
-    description: "Type or say any prompt — even if it's incomplete or unclear.",
+    title: "Just Type or Speak",
+    description: "Enter a rough idea, an unclear prompt, or simply talk — RePromptt understands and adapts.",
     image: images.avatar,
   },
   {
-    title: "Get the Best Version",
-    description: "RePromptt rewrites your prompt to make it clear and effective — ready to copy and use.",
+    title: "Get Better Prompts Instantly",
+    description: "RePromptt refines your input into clear, powerful prompts optimized for AI tools. Just copy and go.",
     image: images.japan,
   },
   {
-    title: "Learn Prompting",
-    description: "Get quick tips and insights from your prompts to help you improve over time.",
+    title: "Learn While You Use",
+    description: "Unlock mini tips, smart suggestions, and insights to improve your prompting skills naturally over time.",
     image: images.onboarding,
   },
 ];
+
 
 
 export default function Index() {
@@ -61,6 +63,7 @@ export default function Index() {
     } else {
       await AsyncStorage.setItem("FirstTime", "1");
       router.replace("/explore");
+      Updates.reloadAsync();
     }
   };
 
@@ -177,6 +180,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#e0d7ff",
     textAlign: "center",
+    fontWeight:600,
     marginBottom: 40,
   },
   nextButton: {

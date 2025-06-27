@@ -20,6 +20,7 @@ import Modal from "react-native-modal";
 import icons from "@/constants/icons";
 import images from "@/constants/images";
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Updates from 'expo-updates';
 
 
 export default function Login() {
@@ -65,6 +66,7 @@ export default function Login() {
         await AsyncStorage.setItem("lastDate", new Date().toDateString());
        // await AsyncStorage.setItem("count", "0");
         router.replace("/explore");
+        Updates.reloadAsync();
       } else {
         Alert.alert("Login Failed", data.error || "Invalid credentials");
       }
@@ -100,6 +102,7 @@ export default function Login() {
         await AsyncStorage.setItem("user", JSON.stringify(data));
         setSignupModalVisible(false);
         router.replace("/explore");
+         Updates.reloadAsync();
       } else {
         Alert.alert("Signup Failed", data.error || "Could not create account");
       }

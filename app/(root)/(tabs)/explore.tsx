@@ -149,6 +149,7 @@ const Explore = () => {
           {loading && <ActivityIndicator size="large" color="#052659" style={styles.loader} />}
         </View>
 
+
         {results && (
           <View style={styles.resultsContainer}>
             {results.corrected.map((item, index) => (
@@ -156,7 +157,10 @@ const Explore = () => {
                 <Text style={styles.sectionTitle}>Corrected Prompt {index + 1}</Text>
                 <PromptCard text={item.prompt} onCopy={() => handleCopy(item.prompt)} onSearch={() => openSearchModal(item.prompt)} />
                 <Text style={styles.learningText}>💡Learning-{"\n"}<Text style={styles.learningText2}>{item.learning}</Text></Text>
+                <View style={styles.divider} />
+
               </View>
+              
             ))}
             <Text style={styles.sectionTitle}>Original Prompt</Text>
             <PromptCard text={results.original} onCopy={() => handleCopy(results.original)} onSearch={() => openSearchModal(results.original)} />
@@ -247,6 +251,12 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "700",
     color: "#5b3ba3", // professional purple
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "#5b3ba380",
+    width: "100%",
+    marginVertical: 16,
   },
   profileButton: {
     padding: 8,

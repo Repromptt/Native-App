@@ -217,7 +217,7 @@ const Explore = () => {
               Start today for just <Text style={{ fontWeight: '700' }}>$9.99/month</Text> and transform your AI experience!
             </Text>
             <TouchableOpacity style={[styles.button, { backgroundColor: '#5b3ba3' }]} onPress={() => router.push("/menu")}> 
-              <Text style={styles.buttonText}>Repromptt Plus{'\n'}Unlimited Prompts</Text>
+              <Text style={styles.buttonText}>Unlimited Prompts</Text>
             </TouchableOpacity>
           </View>
         )}

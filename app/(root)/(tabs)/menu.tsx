@@ -207,9 +207,13 @@ function Menu() {
               <TouchableOpacity style={styles.dangerBtn} onPress={handleLogout}>
                 <Text style={styles.dangerText}>Logout</Text>
               </TouchableOpacity>
+              <TouchableOpacity style={styles.dangerBtn} onPress={()=>{Linking.openURL(`https://repromptt.com/privacy_policy.md`)}}>
+                <Text style={styles.dangerText}>Privacy Policy</Text>
+              </TouchableOpacity>
               <TouchableOpacity style={styles.dangerBtn} onPress={handleDelete}>
                 <Text style={styles.dangerText}>Delete Account</Text>
               </TouchableOpacity>
+           
             </View>
           )}
         </View>

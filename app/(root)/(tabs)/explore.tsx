@@ -7,6 +7,9 @@ import icons from "@/constants/icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Clipboard from 'expo-clipboard';
 import Constants from 'expo-constants';
+import { MaterialIcons } from "@expo/vector-icons";
+import { linkTo } from 'expo-router/build/global-state/routing';
+import { BackHandler } from 'react-native';
 
 const Explore = () => {
   const router = useRouter();
@@ -70,7 +73,7 @@ const Explore = () => {
   const handleGenerate = async () => {
     if (!inputPrompt) return Alert.alert("Error", "Please enter a prompt first.");
     if (user !== null && !user.isPremium && user.count >= 2)
-      return Alert.alert("Limit Reached", "Free users can only generate 2 prompts per day.");
+      return Alert.alert("Daily Limit Reached", "Free users can only generate 2 prompts per day. Upgrade for more!");
     if (user == null && guestCount >= 2)
       return Alert.alert("Limit Reached", "Signup for more.");
 
@@ -121,16 +124,73 @@ const Explore = () => {
     }
   };
 
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollView}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Repromptt</Text>
-          <TouchableOpacity onPress={() => router.push(`/menu`)} style={styles.profileButton}>
-            <Image source={icons.person} style={styles.profileIcon} />
-          </TouchableOpacity>
+          <View style={styles.dropdownContainer}>
+            <TouchableOpacity
+              style={styles.dropdownToggle}
+              onPress={() => setDropdownVisible(!dropdownVisible)}
+            >
+              <MaterialIcons
+                name={dropdownVisible ? "close" : "menu"}
+                size={30}
+                color="#5b3ba3"
+              />
+            </TouchableOpacity>
+
+            {dropdownVisible && (
+              <View style={styles.dropdownMenu}>
+                <TouchableOpacity
+                  style={styles.menuItem}
+                  onPress={() => {
+                    setDropdownVisible(false);
+                    router.push("/menu");
+                  }}
+                >
+                  <Text style={styles.menuText}>Account</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.menuItem}
+                  onPress={async () => {
+                    setDropdownVisible(false);
+                    await AsyncStorage.removeItem('FirstTime');
+                    router.push('/');
+                  }}
+                >
+                  <Text style={styles.menuText}>How to Use ?</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.menuItem}
+                  onPress={() => {
+                    setDropdownVisible(false);
+                    Linking.openURL(`https://repromptt.com`);
+                  }}
+                >
+                  <Text style={styles.menuText}>About Us</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.menuItem}
+                  onPress={() => {
+                    setDropdownVisible(false);
+                    BackHandler.exitApp();
+                  }}
+                >
+                  <Text style={styles.menuText}>Exit</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
         </View>
-          <View style={styles.userRow}>
+
+        <View style={styles.userRow}>
           <Text style={styles.welcomeText}> </Text>
         </View>
 
@@ -140,7 +200,7 @@ const Explore = () => {
             style={styles.input}
             value={inputPrompt}
             onChangeText={setInputPrompt}
-            placeholder="e.g., Write a tweet about climate change"
+            placeholder="e.g., What are some easy, healthy recipes..."
             multiline
           />
           <TouchableOpacity onPress={handleGenerate} style={styles.button}>
@@ -149,6 +209,18 @@ const Explore = () => {
           {loading && <ActivityIndicator size="large" color="#052659" style={styles.loader} />}
         </View>
 
+        {!results && (
+          <View style={{ backgroundColor: '#f8efff', margin: 20, padding: 20, borderRadius: 12, borderColor: '#d8c3ff', borderWidth: 1 }}>
+            <Text style={{ fontSize: 16, fontWeight: '700', color: '#5b3ba3', marginBottom: 10 }}>Unlock More with RePromptt Plus! 👑</Text>
+            <Text style={{ fontSize: 13, color: '#4c2d84', marginBottom: 12 }}>
+              Love the ease of generating better prompts? Upgrade to <Text style={{ fontWeight: '700' }}>RePromptt Plus</Text> for <Text style={{ fontStyle: 'italic' }}>unlimited prompt creations</Text>, personalized tips, and the ability to save your favorites—perfect for mastering AI at your own pace.
+              Start today for just <Text style={{ fontWeight: '700' }}>$9.99/month</Text> and transform your AI experience!
+            </Text>
+            <TouchableOpacity style={[styles.button, { backgroundColor: '#5b3ba3' }]} onPress={() => router.push("/menu")}> 
+              <Text style={styles.buttonText}>Repromptt Plus{'\n'}Unlimited Prompts</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {results && (
           <View style={styles.resultsContainer}>
@@ -156,11 +228,15 @@ const Explore = () => {
               <View key={index} style={styles.correctedItem}>
                 <Text style={styles.sectionTitle}>Corrected Prompt {index + 1}</Text>
                 <PromptCard text={item.prompt} onCopy={() => handleCopy(item.prompt)} onSearch={() => openSearchModal(item.prompt)} />
-                <Text style={styles.learningText}>💡Learning-{"\n"}<Text style={styles.learningText2}>{item.learning}</Text></Text>
+                <Text style={styles.learningText}>
+                  💡Learning-{"\n"}
+                  <Text style={styles.learningText2}>{item.learning}</Text>
+                </Text>
+                <TouchableOpacity onPress={() => handleCopy(item.learning)} style={styles.copyButton}>
+                  <Text style={styles.copyText}>Copy</Text>
+                </TouchableOpacity>
                 <View style={styles.divider} />
-
               </View>
-              
             ))}
             <Text style={styles.sectionTitle}>Original Prompt</Text>
             <PromptCard text={results.original} onCopy={() => handleCopy(results.original)} onSearch={() => openSearchModal(results.original)} />
@@ -173,14 +249,14 @@ const Explore = () => {
             <TouchableOpacity onPress={() => handleSearch("https://chat.openai.com/?q=")} style={styles.button}>
               <Text style={styles.buttonText}>ChatGPT</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => handleSearch("https://gemini.google.com/?q=")} style={styles.button}>
-              <Text style={styles.buttonText}>Gemini</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => handleSearch("https://x.ai/search?q=")} style={styles.button}>
-              <Text style={styles.buttonText}>Grok</Text>
-            </TouchableOpacity>
             <TouchableOpacity onPress={() => handleSearch("https://copilot.microsoft.com/?q=")} style={styles.button}>
               <Text style={styles.buttonText}>Copilot</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => Alert.alert("Under Progress", "Gemini Feature is under progress. Come back later.")} style={styles.button}>
+              <Text style={styles.buttonText}>Gemini</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => Alert.alert("Under Progress", "Grok Feature is under progress. Come back later.")} style={styles.button}>
+              <Text style={styles.buttonText}>Grok</Text>
             </TouchableOpacity>
           </View>
         </Modal>
@@ -214,12 +290,59 @@ const styles = StyleSheet.create({
   scrollView: {
     paddingBottom: 40,
   },
+   dropdownContainer: {
+    position: "relative",
+    alignItems: "flex-end",
+  },
+  dropdownToggle: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical:20,
+    paddingLeft:10,
+
+  },
+  profileIcon: {
+    width: 24,
+    height: 24,
+    resizeMode: "contain",
+    marginRight: 4,
+  },
+  dropdownMenu: {
+    position: "absolute",
+    top: 60,
+    right: -20,
+    width: 200,
+    backgroundColor: "#5b3ba3",
+    borderColor: "#e6d6ff",
+    borderWidth: 1.5,
+    borderRadius: 8,
+    shadowColor: "#",
+    shadowOpacity: 0.5,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 30 },
+    elevation: 5,
+  },
+  menuItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderColor:"#e6d6ff",
+    justifyContent:"center"
+
+  },
+  menuText: {
+    fontSize: 16,
+    fontWeight: 500,
+    paddingHorizontal: 8,
+    color: "#fff",
+    textAlign:"right",
+  },
   modalContainer: {
     backgroundColor: "#e6d6ff",
     borderRadius: 24,
     padding: 24,
     margin:18,
-    shadowColor: "#000",
+    shadowColor: "#5b3ba3",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.5,
     shadowRadius: 10,
@@ -234,7 +357,6 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: "#e6d6ff", // very light purple
-    paddingVertical: 16,
     paddingHorizontal: 20,
     flexDirection: "row",
     justifyContent: "space-between",
@@ -246,6 +368,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 2,
+    zIndex:300,
   },
   headerTitle: {
     fontSize: 28,

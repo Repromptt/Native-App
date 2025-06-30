@@ -24,7 +24,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon.png",
-        "backgroundColor": "#e7bbf4"
+        "backgroundColor": "#ffffff"
       },
       "package": "com.repromptt.repromptt",
       "permissions": []
@@ -41,7 +41,7 @@
         {
           "image": "./assets/images/splash.png",
           "resizeMode": "cover",
-          "backgroundColor": "#e7bbf4",
+          "backgroundColor": "#ffffff",
           "enableFullScreenImage_legacy": true
         }
       ],

@@ -22,6 +22,7 @@ import images from "@/constants/images";
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Updates from 'expo-updates';
 
+import { MaterialIcons } from "@expo/vector-icons";
 
 export default function Login() {
   const router = useRouter();
@@ -31,6 +32,8 @@ export default function Login() {
   const [signupData, setSignupData] = useState({ name: "", email: "", password: "" });
   const [isLoading, setIsLoading] = useState(true);
   const baseURL = "https://reprompttserver.onrender.com/api";
+ const [pass, setPass] = useState('');
+const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     const checkLogin = async () => {
@@ -102,7 +105,6 @@ export default function Login() {
         await AsyncStorage.setItem("user", JSON.stringify(data));
         setSignupModalVisible(false);
         router.replace("/explore");
-         Updates.reloadAsync();
       } else {
         Alert.alert("Signup Failed", data.error || "Could not create account");
       }
@@ -119,7 +121,7 @@ export default function Login() {
       </SafeAreaView>
     );
   }
-
+ 
   return (
    
     <SafeAreaView style={styles.container}>
@@ -136,6 +138,18 @@ export default function Login() {
         style={styles.keyboardView}
       >
         <ScrollView contentContainerStyle={styles.scrollContainer}>
+                        <TouchableOpacity
+                          onPress={() => router.back()}
+                          style={{width: "100%", alignItems:"flex-end"}}
+                        >
+                      <MaterialIcons
+                            name="chevron-left"
+                            size={30}
+                            color="#e0d7ff"
+                            style={{alignItems:"flex-end"}}
+                          />
+                          <Text style={{fontSize:10, textAlign:'right',marginTop:-5, color:"#e0d7ff", fontWeight:700, paddingBottom: 20}}>Back</Text>
+                        </TouchableOpacity>
           <Image source={images.icon} style={styles.logo} />
 
           <Text style={styles.title}>Welcome Back 👋</Text>
@@ -153,10 +167,18 @@ export default function Login() {
             placeholderTextColor="white"
             value={password}
             onChangeText={setPassword}
-            secureTextEntry
+            secureTextEntry={!showPassword}
+
             style={styles.input}
           />
-
+           <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={{display:"flex", flexDirection:"row", gap:15}}>   
+    <MaterialIcons
+      name={showPassword ? 'visibility' : 'visibility-off'}
+      size={24}
+      color="white"
+    />
+    <Text style={{color:"#fff", paddingBottom: 10}}>Show Password</Text>
+  </TouchableOpacity>
           <TouchableOpacity onPress={handleLogin} style={styles.button}>
             <Text style={styles.buttonText}>Login</Text>
           </TouchableOpacity>
@@ -190,11 +212,19 @@ export default function Login() {
           <TextInput
             placeholder="Password"
             placeholderTextColor="#ffe"
-            secureTextEntry
+            secureTextEntry={!showPassword}
             style={styles.input}
             value={signupData.password}
             onChangeText={(text) => setSignupData({ ...signupData, password: text })}
           />
+          <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={{display:"flex", flexDirection:"row", gap:15, justifyContent:"center"}}>   
+    <MaterialIcons
+      name={showPassword ? 'visibility' : 'visibility-off'}
+      size={24}
+      color="white"
+    />
+    <Text style={{color:"#fff", paddingBottom: 10}}>Show Password</Text>
+  </TouchableOpacity>
 
           <TouchableOpacity onPress={handleSignup} style={styles.button}>
             <Text style={styles.buttonText}>Sign Up</Text>
@@ -215,10 +245,31 @@ const styles = StyleSheet.create({
   keyboardView: {
     flex: 1,
   },
+   header: {
+    backgroundColor: "#e6d6ff", // very light purple
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    shadowColor: "#aaa",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
+    zIndex:300,
+  },
+  headerText: {
+    fontSize: 28,
+    fontWeight: "700",
+    color: "#5b3ba3", // professional purple
+  },
   scrollContainer: {
     width: "100%",
     paddingHorizontal: 28,
-    paddingTop: 70,
+    paddingTop: 40,
     alignItems: "center",
   },
   logo: {

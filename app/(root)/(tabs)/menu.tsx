@@ -17,6 +17,7 @@ import { useRouter } from 'expo-router';
 import { MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import icons from '@/constants/icons';
+import * as Updates from 'expo-updates';
 
 function Menu() {
   const router = useRouter();
@@ -82,6 +83,7 @@ function Menu() {
             await AsyncStorage.removeItem('user');
             await AsyncStorage.removeItem('FirstTime');
             router.replace('/');
+            Updates.reloadAsync();
           } catch (error) {
             console.error('Logout Error:', error);
             Alert.alert('Error', 'Could not log out. Please try again.');
@@ -108,6 +110,7 @@ function Menu() {
         await AsyncStorage.removeItem('FirstTime');
         Alert.alert('Account Deleted', 'Your account has been successfully deleted.');
         router.replace('/');
+        Updates.reloadAsync();
       } else {
         Alert.alert('Error', 'Account deletion failed.');
       }
@@ -144,12 +147,21 @@ function Menu() {
   const Header = () => (
     <View style={styles.header}>
       <Text style={styles.headerText}>Repromptt</Text>
-      {user?.isPremium && <Text style={styles.headerText}>👑</Text>}
+        <TouchableOpacity
+                onPress={() => router.back()}
+              >
+                <MaterialIcons
+                  name="chevron-left"
+                  size={30}
+                  color="#5b3ba3"
+                />
+                <Text style={{fontSize:10, textAlign:'center',marginTop:-5, color:"#5b3ba3", fontWeight:700}}>Back</Text>
+              </TouchableOpacity>
     </View>
   );
 
   const renderUserView = () => {
-    const promptLeft = user.isPremium ? 'Unlimited' : `${Math.max(0, 2 - user?.count)} remaining`;
+    const promptLeft = user.isPremium ? ' ∞ ' : `${Math.max(0, 2 - user?.count)}`;
     return (
          <ScrollView contentContainerStyle={styles.scrollContainer}>
       <Header />
@@ -165,11 +177,11 @@ function Menu() {
           <View style={styles.divider} />
           <Text style={styles.infoRow}><Text style={styles.infoLabel}>Plan: </Text><Text style={{ color: user.isPremium ? '#7a5af5' : '#5b3ba3' }}>{user.isPremium ? '👑 Premium' : '🆓 Basic'}</Text></Text>
           <View style={styles.divider} />
-          <Text style={styles.infoRow}><Text style={styles.infoLabel}>Prompts Left: </Text><Text style={{ color: user.isPremium ? '#00c26e' : '#f59e0b' }}>{promptLeft}</Text></Text>
+          <Text style={styles.infoRow}><Text style={styles.infoLabel}>Daily Prompts Left: </Text><Text style={{ color: user.isPremium ? '#00c26e' : '#5b3ba3',fontWeight: 900 }}>  {promptLeft}</Text></Text>
         </View>
         {!user.isPremium && (
           <View style={styles.premiumInfoBox}>
-          <Text style={styles.premiumInfoTitle}>✨ Unlock Premium</Text>
+          <Text style={styles.premiumInfoTitle}>✨ Unlock Plus</Text>
           <Text style={styles.premiumFeature}>- Unlimited Prompts</Text>
             <Text style={styles.premiumFeature}>- Advanced Learnings</Text>
             <Text style={styles.premiumFeature}>- Personalised response</Text>
@@ -181,11 +193,6 @@ function Menu() {
           </View>
         )}
 
-       
-
-        <TouchableOpacity style={styles.secondaryBtn} onPress={handleCheckFirstTime}>
-          <Text style={styles.secondaryText}>How to Use?</Text>
-        </TouchableOpacity>
         <View style={styles.divider} />
 
 
@@ -252,7 +259,7 @@ function Menu() {
          <View style={styles.divider} />
 
         <View style={styles.premiumInfoBox}>
-            <Text style={styles.premiumInfoTitle}>✨ Unlock Premium</Text>
+            <Text style={styles.premiumInfoTitle}>✨ Unlock Plus</Text>
             <Text style={styles.premiumFeature}>- Unlimited Prompts</Text>
             <Text style={styles.premiumFeature}>- Advanced Learnings</Text>
             <Text style={styles.premiumFeature}>- Personalised response</Text>

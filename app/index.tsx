@@ -18,22 +18,22 @@ import * as Updates from 'expo-updates';
 const slides = [
   {
     title: "Welcome to RePromptt",
-    description: "Your personal AI assistant that rewrites, improves, and fixes any prompt — instantly and effortlessly.",
+    description: "Meet your friendly AI helper that rewrites, enhances, and perfects your prompts—quickly and with ease, just for you",
     image: images.icon,
   },
   {
     title: "Just Type or Speak",
-    description: "Enter a rough idea, an unclear prompt, or simply talk — RePromptt understands and adapts.",
+    description: "Share a rough thought, a fuzzy question, or talk naturally—RePromptt listens and adjusts to make it simple for you",
     image: images.avatar,
   },
   {
     title: "Get Better Prompts Instantly",
-    description: "RePromptt refines your input into clear, powerful prompts optimized for AI tools. Just copy and go.",
+    description: "RePromptt turns your ideas into clear, strong prompts perfect for any AI tool. Copy them and start using them right away!",
     image: images.japan,
   },
   {
     title: "Learn While You Use",
-    description: "Unlock mini tips, smart suggestions, and insights to improve your prompting skills naturally over time.",
+    description: "Discover handy tips, smart ideas, and gentle guidance to boost your prompting skills effortlessly as you go.",
     image: images.onboarding,
   },
 ];

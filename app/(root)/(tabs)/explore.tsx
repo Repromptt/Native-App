@@ -25,6 +25,7 @@ const Explore = () => {
     const fetchUser = async () => {
       try {
         const value = await AsyncStorage.getItem("user");
+        console.log(value);
         if (value !== null) {
           const userData = JSON.parse(value);
           setUser(userData);
@@ -52,7 +53,7 @@ const Explore = () => {
     };
     fetchGuestCount();
   }, []);
-
+  
   useEffect(() => {
     const resetCountIfNewDay = async () => {
       try {
@@ -71,41 +72,58 @@ const Explore = () => {
   }, []);
 
   const handleGenerate = async () => {
-    if (!inputPrompt) return Alert.alert("Error", "Please enter a prompt first.");
-    if (user !== null && !user.isPremium && user.count >= 2)
-      return Alert.alert("Daily Limit Reached", "Free users can only generate 2 prompts per day. Upgrade for more!");
-    if (user == null && guestCount >= 2)
-      return Alert.alert("Limit Reached", "Signup for more.");
+  if (!inputPrompt) return Alert.alert("Error", "Please enter a prompt first.");
 
-    setLoading(true);
-    setResults(null);
-    const gmail = user?.email || "t@gmail.com";
+  if (user !== null && !user.isPremium && user.count >= 2)
+    return Alert.alert("Daily Limit Reached", "Free users can only generate 2 prompts per day. Upgrade for more!");
+  if (user == null && guestCount >= 2)
+    return Alert.alert("Limit Reached", "Signup for more.");
 
-    try {
-      const response = await fetch("https://reprompttserver.onrender.com/api/correct-prompt", {
+  setLoading(true);
+  setResults(null);
+  const gmail = user?.email || "t@gmail.com";
+
+  try {
+    const response = await fetch("https://reprompttserver.onrender.com/api/correct-prompt", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ gmail, inputPrompt }),
+    });
+
+    if (!response.ok) throw new Error((await response.json()).error || "Something went wrong");
+
+    const data = await response.json();
+    setInputPrompt('');
+    setResults({ original: inputPrompt, corrected: data.correctedPrompt || [] });
+
+    if (user == null) {
+      const newCount = guestCount + 1;
+      setGuestCount(newCount);
+      await AsyncStorage.setItem("pcount", newCount.toString());
+    } else {
+      // 🔄 Fetch updated user info since backend has updated the count
+      const updatedUserRes = await fetch("https://reprompttserver.onrender.com/api/get-info", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ gmail, inputPrompt }),
+        body: JSON.stringify({ email: user.email }),
       });
 
-      if (!response.ok) throw new Error((await response.json()).error || "Something went wrong");
-
-      const data = await response.json();
-      setInputPrompt('');
-      setResults({ original: inputPrompt, corrected: data.correctedPrompt || [] });
-
-      if (user == null) {
-        const newCount = guestCount + 1;
-        setGuestCount(newCount);
-        await AsyncStorage.setItem("pcount", newCount.toString());
+      if (updatedUserRes.ok) {
+        const updatedUser = await updatedUserRes.json();
+        setUser(updatedUser);
+        await AsyncStorage.setItem("user", JSON.stringify(updatedUser));
+      } else {
+        console.warn("Failed to fetch updated user info.");
       }
-    } catch (error) {
-      console.error("Error generating prompt:", error.message);
-      Alert.alert("Error", "Failed to generate prompt. Please try again.");
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (error) {
+    console.error("Error generating prompt:", error.message);
+    Alert.alert("Error", "Failed to generate prompt. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const handleCopy = async (text) => {
     await Clipboard.setStringAsync(text);
@@ -152,7 +170,7 @@ const Explore = () => {
                     router.push("/menu");
                   }}
                 >
-                  <Text style={styles.menuText}>Account</Text>
+                  <Text style={styles.menuText}>{user ? "Account" : "Account"}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -252,11 +270,11 @@ const Explore = () => {
             <TouchableOpacity onPress={() => handleSearch("https://copilot.microsoft.com/?q=")} style={styles.button}>
               <Text style={styles.buttonText}>Copilot</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => Alert.alert("Under Progress", "Gemini Feature is under progress. Come back later.")} style={styles.button}>
-              <Text style={styles.buttonText}>Gemini</Text>
+            <TouchableOpacity  style={styles.button}>
+              <Text style={styles.buttonText}>Gemini<Text style={{fontSize: 10}}>( Coming soon)</Text></Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => Alert.alert("Under Progress", "Grok Feature is under progress. Come back later.")} style={styles.button}>
-              <Text style={styles.buttonText}>Grok</Text>
+            <TouchableOpacity  style={styles.button}>
+              <Text style={styles.buttonText}>Grok<Text style={{fontSize: 10}}>( Coming soon)</Text></Text>
             </TouchableOpacity>
           </View>
         </Modal>

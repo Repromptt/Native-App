@@ -71,7 +71,7 @@ function Menu() {
 
     fetchLatestUserInfo();
   }, []);
-
+  
   const handleLogout = async () => {
     Alert.alert('Confirm Logout', 'Are you sure you want to logout?', [
       { text: 'Cancel', style: 'cancel' },

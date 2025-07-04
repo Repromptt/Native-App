@@ -7,6 +7,7 @@ import {
   Image,
   Dimensions,
   ActivityIndicator,
+  ScrollView,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -18,7 +19,7 @@ import * as Updates from 'expo-updates';
 const slides = [
   {
     title: "Welcome to RePromptt",
-    description: "Meet your friendly AI helper that rewrites, enhances, and perfects your prompts—quickly and with ease, just for you",
+    description: "RePromptt teaches you how to unlock the power of AI—no tech skills needed",
     image: images.icon,
   },
   {
@@ -33,7 +34,7 @@ const slides = [
   },
   {
     title: "Learn While You Use",
-    description: "Discover handy tips, smart ideas, and gentle guidance to boost your prompting skills effortlessly as you go.",
+    description: "Learn how to get more accurate, helpful replies from AI tools like ChatGPT, Grok, Gemini, and Copilot. No tech skills needed. Just ask.",
     image: images.onboarding,
   },
 ];
@@ -101,7 +102,9 @@ return (
     end={{ x: 0.7, y: 1.1 }}
     style={styles.container}
   >
+    
     <SafeAreaView style={styles.slide}>
+      <View style={{justifyContent:"center", alignItems:"center"}}>
       <Image source={image} style={styles.slideImage} />
       <Text style={styles.slideTitle}>{title}</Text>
       <Text style={styles.slideDesc}>{description}</Text>
@@ -121,6 +124,7 @@ return (
           </Text>
         </TouchableOpacity>
       </View>
+      </View>
     </SafeAreaView>
   </LinearGradient>
 );
@@ -132,6 +136,11 @@ const { width, height } = Dimensions.get("window");
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+   scrollView: {
+    display:"flex",
+    justifyContent:"center",
+    alignItems:"center",
   },
   centered: {
     flex: 1,
@@ -164,8 +173,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 28,
   },
   slideImage: {
-    width: width * 0.9,
-    height: width * 0.9,
+    width: height * 0.4,
+    height: height * 0.4,
     marginBottom: 40,
     borderRadius: 20,
   },

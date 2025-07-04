@@ -184,7 +184,7 @@ function Menu() {
           <Text style={styles.premiumInfoTitle}>✨ Unlock Plus</Text>
           <Text style={styles.premiumFeature}>- Unlimited Prompts</Text>
             <Text style={styles.premiumFeature}>- Advanced Learnings</Text>
-            <Text style={styles.premiumFeature}>- Personalised response</Text>
+            <Text style={styles.premiumFeature}>- Personalized response</Text>
             <Text style={styles.premiumFeature}>- Early Access to New Features</Text>
             <Text></Text>
             <TouchableOpacity style={styles.premiumBtn} onPress={handleGoPremium}>
@@ -264,9 +264,9 @@ function Menu() {
 
         <View style={styles.premiumInfoBox}>
             <Text style={styles.premiumInfoTitle}>✨ Unlock Plus</Text>
-            <Text style={styles.premiumFeature}>- Unlimited Prompts</Text>
+            <Text style={styles.premiumFeature}>- Unlimited Prompts Correction</Text>
             <Text style={styles.premiumFeature}>- Advanced Learnings</Text>
-            <Text style={styles.premiumFeature}>- Personalised response</Text>
+            <Text style={styles.premiumFeature}>- Personalized response</Text>
             <Text></Text>
           </View>
       </View>
@@ -500,6 +500,3 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
 });
-
-
-export default Menu;

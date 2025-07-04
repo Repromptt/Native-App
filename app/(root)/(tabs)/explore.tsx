@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert, ActivityIndicator, Image, StyleSheet, Linking } from 'react-native';
+import { View,Share, Text, ScrollView, TouchableOpacity, TextInput, Alert, ActivityIndicator, Image, StyleSheet, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Modal from 'react-native-modal';
 import { useRouter } from "expo-router";
@@ -71,7 +71,7 @@ const Explore = () => {
     resetCountIfNewDay();
   }, []);
 
-  const handleGenerate = async () => {
+const handleGenerate = async () => {
   if (!inputPrompt) return Alert.alert("Error", "Please enter a prompt first.");
 
   if (user !== null && !user.isPremium && user.count >= 2)
@@ -93,28 +93,37 @@ const Explore = () => {
     if (!response.ok) throw new Error((await response.json()).error || "Something went wrong");
 
     const data = await response.json();
+
+    // ✅ Show result immediately
     setInputPrompt('');
     setResults({ original: inputPrompt, corrected: data.correctedPrompt || [] });
 
+    // 🧠 Update count or user info asynchronously after showing the result
     if (user == null) {
       const newCount = guestCount + 1;
       setGuestCount(newCount);
       await AsyncStorage.setItem("pcount", newCount.toString());
     } else {
-      // 🔄 Fetch updated user info since backend has updated the count
-      const updatedUserRes = await fetch("https://reprompttserver.onrender.com/api/get-info", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: user.email }),
-      });
+      // 🔄 Detach backend fetch to update user info AFTER showing result
+      (async () => {
+        try {
+          const updatedUserRes = await fetch("https://reprompttserver.onrender.com/api/get-info", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: user.email }),
+          });
 
-      if (updatedUserRes.ok) {
-        const updatedUser = await updatedUserRes.json();
-        setUser(updatedUser);
-        await AsyncStorage.setItem("user", JSON.stringify(updatedUser));
-      } else {
-        console.warn("Failed to fetch updated user info.");
-      }
+          if (updatedUserRes.ok) {
+            const updatedUser = await updatedUserRes.json();
+            setUser(updatedUser);
+            await AsyncStorage.setItem("user", JSON.stringify(updatedUser));
+          } else {
+            console.warn("Failed to fetch updated user info.");
+          }
+        } catch (err) {
+          console.error("Background user update error:", err.message);
+        }
+      })();
     }
   } catch (error) {
     console.error("Error generating prompt:", error.message);
@@ -123,6 +132,7 @@ const Explore = () => {
     setLoading(false);
   }
 };
+
 
 
   const handleCopy = async (text) => {
@@ -188,21 +198,39 @@ const Explore = () => {
                   style={styles.menuItem}
                   onPress={() => {
                     setDropdownVisible(false);
-                    Linking.openURL(`https://repromptt.com`);
+                    Linking.openURL(`https://repromptt.com/#contact`);
                   }}
                 >
                   <Text style={styles.menuText}>About Us</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity
-                  style={styles.menuItem}
-                  onPress={() => {
-                    setDropdownVisible(false);
-                    BackHandler.exitApp();
-                  }}
-                >
-                  <Text style={styles.menuText}>Exit</Text>
-                </TouchableOpacity>
+                 <TouchableOpacity
+  style={styles.menuItem}
+  onPress={async () => {
+    try {
+      const result = await Share.share({
+        message:
+          'Hey! I’ve been using this app called RePromptt – it helps you create better AI prompts. Thought you might like it! 😊 https://repromptt.com',
+      });
+
+      // Optional: handle different share outcomes
+      if (result.action === Share.sharedAction) {
+        if (result.activityType) {
+          console.log('Shared with activity type: ', result.activityType);
+        } else {
+          console.log('Shared successfully');
+        }
+      } else if (result.action === Share.dismissedAction) {
+        console.log('Share dismissed');
+      }
+    } catch (error) {
+      console.error('Error sharing:', error.message);
+    }
+  }}
+>
+  <Text style={styles.menuText}>Invite Friends</Text>
+</TouchableOpacity>
+
               </View>
             )}
           </View>

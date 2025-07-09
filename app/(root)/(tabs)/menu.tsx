@@ -18,6 +18,9 @@ import { MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import icons from '@/constants/icons';
 import * as Updates from 'expo-updates';
+import * as RNIap from 'react-native-iap';
+
+
 
 function Menu() {
   const router = useRouter();
@@ -26,6 +29,87 @@ function Menu() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [confirmEmail, setConfirmEmail] = useState('');
   const [dropdownVisible, setDropdownVisible] = useState(false);
+
+ const productIds = ['pro_monthly'];
+const [products, setProducts] = useState([]);
+
+useEffect(() => {
+  const initIAP = async () => {
+    try {
+      await RNIap.initConnection();
+      const subs = await RNIap.getSubscriptions(productIds);
+      console.log('Fetched subscriptions:', subs);
+      setProducts(subs);
+    } catch (err) {
+      console.error('Error connecting to IAP:', err);
+      Alert.alert("Error", "Connection");
+
+    }
+  };
+
+  initIAP();
+
+  return () => {
+    RNIap.endConnection();
+  };
+}, []);
+
+
+ const purchase = async () => {
+  if (!products.length) {
+    Alert.alert("Error", "Subscription not available yet. Please try again later.");
+    return;
+  }
+
+  try {
+    const productId = products[0].productId;
+    console.log("Requesting subscription for:", productId);
+    await RNIap.requestSubscription(productId);
+  } catch (error) {
+    console.warn("Purchase error:", error);
+    Alert.alert("Error", error.message || "Something went wrong.");
+  }
+};
+
+useEffect(() => {
+  const purchaseUpdateSubscription = RNIap.purchaseUpdatedListener(async (purchase) => {
+    const receipt = purchase.transactionReceipt;
+    if (receipt) {
+     try {
+      const response = await fetch('https://reprompttserver.onrender.com/api/access-premium', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: user.email,
+          productId: purchase.productId,
+          purchaseToken: purchase.purchaseToken,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        Alert.alert('Success', 'Restart App for premium');
+      } else {
+        Alert.alert('Error', data.message || 'Validation failed');
+      }
+
+      await RNIap.finishTransaction(purchase);
+    } catch (e) {
+      console.error('Validation request error:', e);
+    }
+    }
+  });
+
+  const purchaseErrorSubscription = RNIap.purchaseErrorListener((error) => {
+    console.error('Purchase error listener:', error);
+    Alert.alert('Error', error.message || 'Purchase failed');
+  });
+
+  return () => {
+    purchaseUpdateSubscription.remove();
+    purchaseErrorSubscription.remove();
+  };
+}, []);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -187,7 +271,7 @@ function Menu() {
             <Text style={styles.premiumFeature}>- Personalized response</Text>
             <Text style={styles.premiumFeature}>- Early Access to New Features</Text>
             <Text></Text>
-            <TouchableOpacity style={styles.premiumBtn} onPress={handleGoPremium}>
+            <TouchableOpacity style={styles.premiumBtn} onPress={purchase}>
             <Text style={styles.btnText}>Upgrade to Premium 👑</Text>
           </TouchableOpacity>
           </View>

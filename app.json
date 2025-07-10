@@ -56,7 +56,7 @@
           ]
         }
       ],
-      "react-native-iap"
+      "./plugins/withRevenueCat"
     ],
     "experiments": {
       "typedRoutes": true

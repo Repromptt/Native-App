@@ -2,10 +2,10 @@ import { useEffect } from "react";
 import { Stack } from "expo-router";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
-
+import { enableScreens } from "react-native-screens";
 import "./globals.css";
 
-
+enableScreens();
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     "Rubik-Bold": require("../assets/fonts/Rubik-Bold.ttf"),

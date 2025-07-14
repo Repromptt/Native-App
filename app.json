@@ -17,8 +17,6 @@
         "NSCameraUsageDescription": "This app uses the camera to take photos.",
         "NSMicrophoneUsageDescription": "This app uses the microphone for voice features.",
         "NSLocationWhenInUseUsageDescription": "This app uses location to enhance your experience."
-
-
       }
     },
     "android": {
@@ -27,7 +25,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.repromptt.repromptt",
-      "permissions": []
+      "permissions": ["com.android.vending.BILLING"]
     },
     "web": {
       "bundler": "metro",
@@ -57,7 +55,8 @@
             "./assets/fonts/Rubik-SemiBold.ttf"
           ]
         }
-      ]
+      ],
+      "./plugins/withRevenueCat"
     ],
     "experiments": {
       "typedRoutes": true

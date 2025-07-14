@@ -321,7 +321,7 @@ const PromptCard = ({ text, onCopy, onSearch }) => (
         <Text style={styles.copyText}>Copy</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={() => onSearch(text)} style={styles.copyButton}>
-        <Text style={styles.copyText}>Try it</Text>
+        <Text style={styles.copyText}>Answer</Text>
       </TouchableOpacity>
     </View>
   </View>

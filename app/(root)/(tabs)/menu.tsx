@@ -1,3 +1,4 @@
+// MENU.tsx
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, Alert,
@@ -10,7 +11,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import icons from '@/constants/icons';
 import * as Updates from 'expo-updates';
-import Purchases from 'react-native-purchases';
+import { checkUserSubscription } from './revenue';
 
 function Menu() {
   const router = useRouter();
@@ -19,228 +20,83 @@ function Menu() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [confirmEmail, setConfirmEmail] = useState('');
   const [dropdownVisible, setDropdownVisible] = useState(false);
-  const [offerings, setOfferings] = useState(null);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const value = await AsyncStorage.getItem('user');
-        if (value) setUser(JSON.parse(value));
-      } catch (e) {
-        console.error('Failed to fetch user:', e);
-      }
-    };
-    fetchUser();
-  }, []);
-
-  useEffect(() => {
-    const fetchLatestUserInfo = async () => {
+    const fetchAndSyncUser = async () => {
       try {
         const value = await AsyncStorage.getItem('user');
         if (value) {
-          const userData = JSON.parse(value);
-          const response = await fetch('https://reprompttserver.onrender.com/api/get-info', {
+          const localUser = JSON.parse(value);
+          const res = await fetch('https://reprompttserver.onrender.com/api/get-info', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: userData.email }),
+            body: JSON.stringify({ email: localUser.email }),
           });
 
-          if (response.ok) {
-            const data = await response.json();
-            await AsyncStorage.setItem('user', JSON.stringify(data));
-            setUser(data);
+          if (res.ok) {
+            const updatedUser = await res.json();
+            await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
+            setUser(updatedUser);
+            await checkUserSubscription();
           }
         }
-      } catch (error) {
-        console.error('Error refreshing user info:', error);
+      } catch (err) {
+        console.error('Fetch user failed:', err);
       } finally {
         setIsLoading(false);
       }
     };
-
-    fetchLatestUserInfo();
+    fetchAndSyncUser();
   }, []);
-
-  useEffect(() => {
-    const setupRevenueCat = async () => {
-      if (!user?.email) return;
-      Purchases.setLogLevel(Purchases.LOG_LEVEL.DEBUG);
-      await Purchases.configure({
-  apiKey: Platform.OS === 'ios'
-    ? 'appl_CQCxgynMkPhMFbgGOVKNIhxvYEF'
-    : 'goog_gZBBYSQiWcQksqNDIppclWUMRiX',
-  appUserID: user.email,
-})
-    };
-    setupRevenueCat();
-  }, [user]);
-
-  useEffect(() => {
-    const fetchOfferings = async () => {
-      try {
-        const fetchedOfferings = await Purchases.getOfferings();
-        if (fetchedOfferings.current?.availablePackages?.length) {
-          setOfferings(fetchedOfferings);
-        }
-      } catch (e) {
-        console.error('RevenueCat error:', e);
-        Alert.alert('Error', 'Unable to fetch subscription offerings');
-      }
-    };
-    fetchOfferings();
-  }, []);
-
-  const purchase = async () => {
-    if (!offerings?.current?.availablePackages?.length) {
-      return Alert.alert('Error', 'No subscription available');
-    }
-
-    try {
-      const { customerInfo } = await Purchases.purchasePackage(
-        offerings.current.availablePackages[0]
-      );
-
-      if (customerInfo.entitlements.active['pro_monthly']) {
-        const updatedUser = { ...user, isPremium: true };
-        await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
-        setUser(updatedUser);
-        Alert.alert('Success', 'You are now premium!');
-      }
-    } catch (e) {
-      if (!e.userCancelled) {
-        Alert.alert('Error', e.message || 'Purchase failed');
-      }
-    }
-  };
-
-  useEffect(() => {
-    const checkSubscription = async () => {
-      if (!user?.email) return;
-      const customerInfo = await Purchases.getCustomerInfo();
-      const isPro = customerInfo.entitlements.active['pro_monthly'];
-
-      const updatedUser = { ...user, isPremium: !!isPro };
-      await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
-      setUser(updatedUser);
-
-      if (isPro) {
-        console.log('User is premium');
-      } else {
-        console.log('User is free');
-      }
-    };
-
-    checkSubscription();
-  }, [user]);
-
-  useEffect(() => {
-    const syncEntitlement = async () => {
-      if (!user?.email) return;
-      const customerInfo = await Purchases.getCustomerInfo();
-      const isPro = customerInfo.entitlements.active['pro_monthly'];
-
-      if (isPro) {
-        await fetch('https://reprompttserver.onrender.com/api/access-premium', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: user.email,
-            entitlement: 'pro_monthly',
-            platform: Platform.OS,
-          }),
-        });
-      }
-      if (!isPro) {
-         await fetch('https://reprompttserver.onrender.com/api/revoke-premium', {
-         method: 'POST',
-         headers: { 'Content-Type': 'application/json' },
-         body: JSON.stringify({
-        email: user.email,
-        entitlement: 'pro_monthly',
-        platform: Platform.OS,
-    }),
-  });
-}
-    };
-
-    syncEntitlement();
-  }, [user]);
 
   const handleLogout = async () => {
-    Alert.alert('Confirm Logout', 'Are you sure you want to logout?', [
+    Alert.alert('Confirm Logout', 'Are you sure?', [
       { text: 'Cancel', style: 'cancel' },
       {
-        text: 'Logout',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await AsyncStorage.removeItem('user');
-            await AsyncStorage.removeItem('FirstTime');
-            router.replace('/');
-            Updates.reloadAsync();
-          } catch (error) {
-            console.error('Logout Error:', error);
-            Alert.alert('Error', 'Could not log out. Please try again.');
-          }
+        text: 'Logout', style: 'destructive', onPress: async () => {
+          await AsyncStorage.multiRemove(['user', 'FirstTime']);
+          router.replace('/');
+          Updates.reloadAsync();
         },
       },
     ]);
   };
+   const handleDelete = () => setShowDeleteModal(true);
 
   const confirmDeleteAccount = async () => {
-    if (confirmEmail !== user.email) {
-      return Alert.alert('Error', 'Entered email does not match.');
-    }
-
+    if (confirmEmail !== user.email) return Alert.alert('Error', 'Email mismatch');
     try {
-      const response = await fetch('https://reprompttserver.onrender.com/api/deleteacc-2345rwe4h94f2e', {
+      const res = await fetch('https://reprompttserver.onrender.com/api/deleteacc-2345rwe4h94f2e', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: user.email, password: user.password }),
       });
-
-      if (response.ok) {
-        await AsyncStorage.removeItem('user');
-        await AsyncStorage.removeItem('FirstTime');
-        Alert.alert('Account Deleted', 'Your account has been successfully deleted.');
+      if (res.ok) {
+        await AsyncStorage.multiRemove(['user', 'FirstTime']);
+        Alert.alert('Deleted', 'Account removed');
         router.replace('/');
         Updates.reloadAsync();
-      } else {
-        Alert.alert('Error', 'Account deletion failed.');
-      }
-    } catch (error) {
-      console.error('Delete Error:', error);
-      Alert.alert('Error', 'An error occurred. Please try again.');
+      } else Alert.alert('Error', 'Failed to delete account');
+    } catch (err) {
+      console.error('Delete error:', err);
+      Alert.alert('Error', 'Unexpected error');
     }
   };
-
-  const handleDelete = () => setShowDeleteModal(true);
 
   const handleCheckFirstTime = async () => {
     await AsyncStorage.removeItem('FirstTime');
     router.push('/');
   };
 
+
   if (isLoading) {
-    return (
-      <SafeAreaView style={styles.centered}>
-        <ActivityIndicator size="large" color="#052659" />
-      </SafeAreaView>
-    );
+    return <SafeAreaView style={styles.centered}><ActivityIndicator size="large" color="#052659" /></SafeAreaView>;
   }
 
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      {user ? (
-        renderUserView()
-      ) : (
-        renderGuestView()
-      )}
-    </SafeAreaView>
-  );
+  return <SafeAreaView style={styles.safeArea}>{user ? renderUserView() : renderGuestView()}</SafeAreaView>;
 
   function renderUserView() {
-    const promptLeft = user.isPremium ? ' ∞ ' : `${Math.max(0, 2 - user?.count)}`;
+    const promptLeft = user.isPremium ? '∞' : `${Math.max(0, 2 - user.count)}`;
     return (
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <Header />
@@ -263,14 +119,13 @@ function Menu() {
               <Text style={styles.premiumFeature}>- Advanced Learnings</Text>
               <Text style={styles.premiumFeature}>- Personalized response</Text>
               <Text style={styles.premiumFeature}>- Early Access to New Features</Text>
-              <TouchableOpacity style={styles.premiumBtn} onPress={purchase}>
+              <TouchableOpacity style={styles.premiumBtn} onPress={() => router.replace('/revenue')}>
                 <Text style={styles.btnText}>Upgrade to Premium 👑</Text>
               </TouchableOpacity>
             </View>
           )}
 
           <View style={styles.divider} />
-
           <View style={styles.dropdownContainer}>
             <TouchableOpacity style={styles.dropdownToggle} onPress={() => setDropdownVisible(!dropdownVisible)}>
               <Text style={styles.secondaryText}>Account Options</Text>
@@ -279,42 +134,26 @@ function Menu() {
 
             {dropdownVisible && (
               <View style={styles.dropdownMenu}>
-                <TouchableOpacity style={styles.dangerBtn} onPress={handleLogout}>
-                  <Text style={styles.dangerText}>Logout</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.dangerBtn} onPress={() => Linking.openURL(`https://repromptt.com/privacy_policy.md`)}>
-                  <Text style={styles.dangerText}>Privacy Policy</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.dangerBtn} onPress={handleDelete}>
-                  <Text style={styles.dangerText}>Delete Account</Text>
-                </TouchableOpacity>
+                <TouchableOpacity style={styles.dangerBtn} onPress={handleLogout}><Text style={styles.dangerText}>Logout</Text></TouchableOpacity>
+                <TouchableOpacity style={styles.dangerBtn} onPress={() => Linking.openURL(`https://repromptt.com/privacy_policy.md`)}><Text style={styles.dangerText}>Privacy Policy</Text></TouchableOpacity>
+                <TouchableOpacity style={styles.dangerBtn} onPress={handleDelete}><Text style={styles.dangerText}>Delete Account</Text></TouchableOpacity>
               </View>
             )}
           </View>
-        </View>
 
-        <Modal visible={showDeleteModal} transparent animationType="slide">
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContainer}>
-              <Text style={styles.modalTitle}>Confirm Account Deletion</Text>
-              <TextInput
-                placeholder="Enter your email to confirm"
-                style={styles.input}
-                onChangeText={setConfirmEmail}
-                value={confirmEmail}
-                autoCapitalize="none"
-              />
-              <View style={styles.modalButtons}>
-                <TouchableOpacity style={styles.cancelBtn} onPress={() => setShowDeleteModal(false)}>
-                  <Text style={styles.cancelText}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.confirmBtn} onPress={confirmDeleteAccount}>
-                  <Text style={styles.confirmText}>Confirm</Text>
-                </TouchableOpacity>
+          <Modal visible={showDeleteModal} transparent animationType="slide">
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContainer}>
+                <Text style={styles.modalTitle}>Confirm Account Deletion</Text>
+                <TextInput placeholder="Enter your email to confirm" style={styles.input} onChangeText={setConfirmEmail} value={confirmEmail} autoCapitalize="none" />
+                <View style={styles.modalButtons}>
+                  <TouchableOpacity style={styles.cancelBtn} onPress={() => setShowDeleteModal(false)}><Text style={styles.cancelText}>Cancel</Text></TouchableOpacity>
+                  <TouchableOpacity style={styles.confirmBtn} onPress={confirmDeleteAccount}><Text style={styles.confirmText}>Confirm</Text></TouchableOpacity>
+                </View>
               </View>
             </View>
-          </View>
-        </Modal>
+          </Modal>
+        </View>
       </ScrollView>
     );
   }
@@ -359,7 +198,6 @@ function Menu() {
 }
 
 export default Menu;
-
 
 const styles = StyleSheet.create({
    safeArea: {

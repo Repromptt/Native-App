@@ -11,7 +11,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import icons from '@/constants/icons';
 import * as Updates from 'expo-updates';
-import { checkUserSubscription } from './revenue';
+
 
 function Menu() {
   const router = useRouter();
@@ -37,7 +37,6 @@ function Menu() {
             const updatedUser = await res.json();
             await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
             setUser(updatedUser);
-            await checkUserSubscription();
           }
         }
       } catch (err) {

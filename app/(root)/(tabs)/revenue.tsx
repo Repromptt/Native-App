@@ -1,70 +1,65 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, Alert,
-  StyleSheet, ActivityIndicator, Platform
+  StyleSheet, ActivityIndicator, Platform, Linking
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Purchases from 'react-native-purchases';
+import * as RNIap from 'react-native-iap';
+
+const itemSkus = Platform.select({
+  ios: ['pro_monthly'], 
+});
 
 function Revenue() {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [offerings, setOfferings] = useState(null);
+  const [products, setProducts] = useState([]);
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const init = async () => {
       try {
         const value = await AsyncStorage.getItem('user');
         if (value) {
           const parsed = JSON.parse(value);
           setUser(parsed);
-          await configureRevenueCat(parsed.email);
         }
-      } catch (e) {
-        console.error('Failed to fetch user:', e);
+
+        await RNIap.initConnection();
+        const availableProducts = await RNIap.getSubscriptions(itemSkus);
+        setProducts(availableProducts);
+      } catch (err) {
+        console.error('IAP Error:', err);
       } finally {
         setIsLoading(false);
       }
     };
-    fetchUser();
-  }, []);
 
-  const configureRevenueCat = async (email) => {
-    try {
-      Purchases.setLogLevel(Purchases.LOG_LEVEL.DEBUG);
-      await Purchases.configure({
-        apiKey: Platform.OS === 'ios'
-          ? 'appl_CQCxgynMkPhMFbgGOVKNIhxvYEF'
-          : 'goog_gZBBYSQiWcQksqNDIppclWUMRiX',
-        appUserID: email,
-      });
-    } catch (err) {
-      console.error("RevenueCat init error:", err);
-    }
-  };
+    init();
+
+    return () => {
+      RNIap.endConnection();
+    };
+  }, []);
 
   const purchase = async () => {
     try {
-      const fetchedOfferings = await Purchases.getOfferings();
-      if (!fetchedOfferings.current?.availablePackages?.length) {
-        return Alert.alert('Error', 'No subscription available');
+      if (!products.length) {
+        return Alert.alert('Error', 'No subscriptions found.');
       }
 
-      const { customerInfo } = await Purchases.purchasePackage(
-        fetchedOfferings.current.availablePackages[0]
-      );
+      const selected = products[0]; // You can also show multiple plans
+      const purchase = await RNIap.requestSubscription(selected.productId);
 
-      const isPro = customerInfo.entitlements.active['pro_monthly'];
-      if (isPro) {
+      if (purchase.transactionId && purchase.productId === 'pro_monthly') {
         const updatedUser = { ...user, isPremium: true };
         await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
         setUser(updatedUser);
-        Alert.alert('Success', 'You are now premium!');
 
+        // Call backend to grant premium access
         await fetch('https://reprompttserver.onrender.com/api/access-premium', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -74,39 +69,13 @@ function Revenue() {
             platform: Platform.OS,
           })
         });
+
+        Alert.alert('Success', 'You are now a premium user!');
       }
-    } catch (e) {
-      if (!e.userCancelled) {
-        Alert.alert('Error', e.message || 'Purchase failed');
-      }
-    }
-  };
-
-  const checkSubscription = async () => {
-    try {
-      const value = await AsyncStorage.getItem('user');
-      if (!value) return;
-      const localUser = JSON.parse(value);
-
-      const customerInfo = await Purchases.getCustomerInfo();
-      const isPro = !!customerInfo.entitlements.active['pro_monthly'];
-
-      const updatedUser = { ...localUser, isPremium: isPro };
-      await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
-      setUser(updatedUser);
-
-      const endpoint = isPro ? 'access-premium' : 'revoke-premium';
-      await fetch(`https://reprompttserver.onrender.com/api/${endpoint}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: updatedUser.email,
-          entitlement: 'pro_monthly',
-          platform: Platform.OS,
-        }),
-      });
     } catch (err) {
-      console.error("Subscription check error:", err);
+      if (err.code !== 'E_USER_CANCELLED') {
+        Alert.alert('Error', err.message || 'Purchase failed');
+      }
     }
   };
 
@@ -123,15 +92,19 @@ function Revenue() {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <Header />
 
-        <View style={{ padding: 20 }} style={styles.infoCardFull}>
+        <View style={styles.infoCardFull}>
           <Text style={styles.premiumInfoTitle}>Upgrade to Premium</Text>
           <Text style={styles.infoLabel}>- Unlock Unlimited Prompts Generation</Text>
-            <Text style={styles.infoLabel}>- Get advanced Prompt Learning Features</Text>
-            <Text style={styles.infoLabel}>- Early Access to New Features and Faster community Support</Text>
-             <Text style={styles.infoLabel}>- Be 10x productive</Text>
+          <Text style={styles.infoLabel}>- Get advanced Prompt Learning Features</Text>
+          <Text style={styles.infoLabel}>- Faster community Support</Text>
+          <Text style={styles.infoLabel}>- Price : $12.99</Text>
 
-          <TouchableOpacity  style={styles.premiumBtn} onPress={purchase}>
-            <Text style={styles.btnText}>Subscribe Now</Text>
+          <TouchableOpacity style={styles.premiumBtn} onPress={() => Linking.openURL('https://www.apple.com/legal/internet-services/itunes/dev/stdeula/')}>
+            <Text style={styles.btnText}>Terms of Use</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.premiumBtn} onPress={purchase}>
+            <Text style={styles.btnText}>Pay $12.99</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -139,49 +112,17 @@ function Revenue() {
   );
 
   function Header() {
-      return (
-        <View style={styles.header}>
-          <Text style={styles.headerText}>Repromptt</Text>
-          <TouchableOpacity onPress={() => router.back()}>
-            <MaterialIcons name="chevron-left" size={30} color="#5b3ba3" />
-            <Text style={{ fontSize: 10, textAlign: 'center', marginTop: -5, color: "#5b3ba3", fontWeight: '700' }}>Back</Text>
-          </TouchableOpacity>
-        </View>
-      );
-    }
-}
-
-export const checkUserSubscription = async () => {
-  try {
-    const value = await AsyncStorage.getItem('user');
-    if (!value) return;
-    const user = JSON.parse(value);
-    await Purchases.configure({
-      apiKey: Platform.OS === 'ios'
-        ? 'appl_CQCxgynMkPhMFbgGOVKNIhxvYEF'
-        : 'goog_gZBBYSQiWcQksqNDIppclWUMRiX',
-      appUserID: user.email,
-    });
-    const customerInfo = await Purchases.getCustomerInfo();
-    const isPro = !!customerInfo.entitlements.active['pro_monthly'];
-
-    const updatedUser = { ...user, isPremium: isPro };
-    await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
-
-    const endpoint = isPro ? 'access-premium' : 'revoke-premium';
-    await fetch(`https://reprompttserver.onrender.com/api/${endpoint}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: updatedUser.email,
-        entitlement: 'pro_monthly',
-        platform: Platform.OS,
-      }),
-    });
-  } catch (err) {
-    console.error("Error in checkUserSubscription:", err);
+    return (
+      <View style={styles.header}>
+        <Text style={styles.headerText}>Repromptt</Text>
+        <TouchableOpacity onPress={() => router.back()}>
+          <MaterialIcons name="chevron-left" size={30} color="#5b3ba3" />
+          <Text style={{ fontSize: 10, textAlign: 'center', marginTop: -5, color: "#5b3ba3", fontWeight: '700' }}>Back</Text>
+        </TouchableOpacity>
+      </View>
+    );
   }
-};
+}
 
 export default Revenue;
 

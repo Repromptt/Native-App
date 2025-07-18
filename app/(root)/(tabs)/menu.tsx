@@ -11,6 +11,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import icons from '@/constants/icons';
 import * as Updates from 'expo-updates';
+import * as RNIap from 'react-native-iap';
 
 
 function Menu() {
@@ -37,6 +38,34 @@ function Menu() {
             const updatedUser = await res.json();
             await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
             setUser(updatedUser);
+
+            // 🔁 Check subscription status (iOS only)
+          if (Platform.OS === 'ios') {
+            try {
+              await RNIap.initConnection();
+              const purchases = await RNIap.getAvailablePurchases();
+
+              const isSubscribed = purchases.some(
+                (purchase) =>
+                  purchase.productId === 'pro_monthly' && // your iOS product ID
+                  (purchase.transactionReceipt || purchase.originalTransactionId)
+              );
+
+              const endpoint = isSubscribed
+                ? 'access-premium'
+                : 'revoke-premium';
+
+              await fetch(`https://reprompttserver.onrender.com/api/${endpoint}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: localUser.email }),
+              });
+            } catch (err) {
+              console.warn('Subscription check failed:', err);
+            } finally {
+              RNIap.endConnection();
+            }
+          }
           }
         }
       } catch (err) {
@@ -177,6 +206,9 @@ function Menu() {
             <Text style={styles.premiumFeature}>- Unlimited Prompts Correction</Text>
             <Text style={styles.premiumFeature}>- Advanced Learnings</Text>
             <Text style={styles.premiumFeature}>- Personalized response</Text>
+            <TouchableOpacity style={styles.premiumBtn} onPress={() => router.replace('/revenue')}>
+                <Text style={styles.btnText}>Upgrade to Premium 👑</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>

@@ -23,10 +23,7 @@ function Revenue() {
     const init = async () => {
       try {
         const value = await AsyncStorage.getItem('user');
-        if (value) {
-          const parsed = JSON.parse(value);
-          setUser(parsed);
-        }
+        
 
         await RNIap.initConnection();
         const availableProducts = await RNIap.getSubscriptions(itemSkus);
@@ -51,7 +48,7 @@ function Revenue() {
         return Alert.alert('Error', 'No subscriptions found.');
       }
 
-      const selected = products[0]; // You can also show multiple plans
+      const selected = products[0]; 
       const purchase = await RNIap.requestSubscription(selected.productId);
 
       if (purchase.transactionId && purchase.productId === 'pro_monthly') {
@@ -59,7 +56,7 @@ function Revenue() {
         await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
         setUser(updatedUser);
 
-        // Call backend to grant premium access
+       
         await fetch('https://reprompttserver.onrender.com/api/access-premium', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -93,11 +90,11 @@ function Revenue() {
         <Header />
 
         <View style={styles.infoCardFull}>
-          <Text style={styles.premiumInfoTitle}>Upgrade to Premium</Text>
+          <Text style={styles.premiumInfoTitle}>Pro Monthly</Text>
           <Text style={styles.infoLabel}>- Unlock Unlimited Prompts Generation</Text>
-          <Text style={styles.infoLabel}>- Get advanced Prompt Learning Features</Text>
-          <Text style={styles.infoLabel}>- Faster community Support</Text>
-          <Text style={styles.infoLabel}>- Price : $12.99</Text>
+          <Text style={styles.infoLabel}>- Get advanced Learning Features</Text>
+          <Text style={styles.infoLabel}>- $12.99/month, auto-renews until canceled</Text>
+          <Text style={styles.infoLabel}>- Issue: support@repromptt.com</Text>
 
           <TouchableOpacity style={styles.premiumBtn} onPress={() => Linking.openURL('https://www.apple.com/legal/internet-services/itunes/dev/stdeula/')}>
             <Text style={styles.btnText}>Terms of Use</Text>
@@ -160,22 +157,6 @@ const styles = StyleSheet.create({
   profileContainer: {
     padding: 20,
     alignItems: "center",
-  },
-  avatarLarge: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    backgroundColor: "#ede7ff",
-    tintColor: "#5b3ba3",
-    marginBottom: 16,
-    borderWidth: 2,
-    borderColor: "#c7b0ff",
-  },
-  username: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: "#40216d",
-    marginBottom: 12,
   },
   divider: {
     height: 1,
@@ -264,90 +245,8 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "700",
   },
-  dangerBtn: {
-    backgroundColor: "#ffe6e6",
-    paddingVertical: 12,
-    borderRadius: 10,
-    width: "100%",
-    alignItems: "center",
-    marginBottom: 12,
-    borderColor: "#ffb3b3",
-    borderWidth: 1,
-  },
-  dangerText: {
-    color: "#cc0000",
-    fontSize: 15,
-    fontWeight: "700",
-  },
-  modalOverlay: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.4)",
-  },
-  modalContainer: {
-    backgroundColor: "#fff",
-    padding: 20,
-    borderRadius: 10,
-    width: "90%",
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    marginBottom: 10,
-    color: "#3a2373",
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 10,
-    borderRadius: 8,
-    marginBottom: 10,
-    fontSize: 15,
-  },
-  modalButtons: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 10,
-  },
-  cancelBtn: {
-    backgroundColor: "#ddd",
-    padding: 10,
-    borderRadius: 8,
-    flex: 1,
-    marginRight: 10,
-  },
-  cancelText: {
-    textAlign: "center",
-    fontWeight: "600",
-  },
-  confirmBtn: {
-    backgroundColor: "#cc0000",
-    padding: 10,
-    borderRadius: 8,
-    flex: 1,
-  },
-  confirmText: {
-    color: "#fff",
-    textAlign: "center",
-    fontWeight: "600",
-  },
-   dropdownContainer: {
-    width: "90%",
-    marginBottom: 12,
-  },
-  dropdownToggle: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: "#f3ebff",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#c7b0ff",
-  },
-  dropdownMenu: {
-    marginTop: 8,
-  },
+  
+  
+
+  
 });

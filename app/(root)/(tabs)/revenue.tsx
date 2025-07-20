@@ -131,7 +131,7 @@ function Revenue() {
              <Text style={styles.infoLabel}>- Be 10x productive</Text>
 
           <TouchableOpacity  style={styles.premiumBtn} onPress={purchase}>
-            <Text style={styles.btnText}>Subscribe Now</Text>
+            <Text style={styles.btnText}>Pay $12.99</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

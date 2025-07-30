@@ -90,19 +90,33 @@ function Revenue() {
         <Header />
 
         <View style={styles.infoCardFull}>
-          <Text style={styles.premiumInfoTitle}>Pro Monthly</Text>
+          <Text style={styles.premiumInfoTitle}>Pro Monthly: $11.99/month</Text>
+           <Text style={styles.infoLabel}></Text>
           <Text style={styles.infoLabel}>- Unlock Unlimited Prompts Generation</Text>
           <Text style={styles.infoLabel}>- Get advanced Learning Features</Text>
-          <Text style={styles.infoLabel}>- $12.99/month, auto-renews until canceled</Text>
-          <Text style={styles.infoLabel}>- Issue: support@repromptt.com</Text>
+          
 
-          <TouchableOpacity style={styles.premiumBtn} onPress={() => Linking.openURL('https://www.apple.com/legal/internet-services/itunes/dev/stdeula/')}>
-            <Text style={styles.btnText}>Terms of Use</Text>
-          </TouchableOpacity>
+          
 
           <TouchableOpacity style={styles.premiumBtn} onPress={purchase}>
-            <Text style={styles.btnText}>Pay $12.99</Text>
+            <Text style={styles.btnText}>Subscribe</Text>
           </TouchableOpacity>
+           <View style={{alignItems:'center'}}>
+          <TouchableOpacity >
+            <Text style={{color:'grey'}}>with auto-renew, cancel anytime</Text>
+            <Text></Text>
+          </TouchableOpacity>
+        
+          </View>
+          <View style={{alignItems:'center'}}>
+          <TouchableOpacity onPress={() => Linking.openURL('https://www.apple.com/legal/internet-services/itunes/dev/stdeula/')}>
+            <Text style={{textDecorationLine: 'underline'}}>Terms of Use</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => Linking.openURL('https://www.repromptt.com/privacy_policy.md')}>
+            <Text style={{textDecorationLine: 'underline'}}>Privacy Policy</Text>
+          </TouchableOpacity>
+          </View>
+
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -194,8 +208,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   premiumInfoTitle: {
-    fontWeight: "700",
-    fontSize: 16,
+    fontWeight: "900",
+    fontSize: 18,
     color: "#5b3ba3",
     marginBottom: 6,
   },

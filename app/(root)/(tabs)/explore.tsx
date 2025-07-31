@@ -257,13 +257,13 @@ const handleGenerate = async () => {
 
         {!results && (
           <View style={{ backgroundColor: '#f8efff', margin: 20, padding: 20, borderRadius: 12, borderColor: '#d8c3ff', borderWidth: 1 }}>
-            <Text style={{ fontSize: 16, fontWeight: '700', color: '#5b3ba3', marginBottom: 10 }}>Unlock More with RePromptt Plus! 👑</Text>
+            <Text style={{ fontSize: 16, fontWeight: '700', color: '#5b3ba3', marginBottom: 10 }}>Unlock More with pro_monthly</Text>
             <Text style={{ fontSize: 13, color: '#4c2d84', marginBottom: 12 }}>
-              Love the ease of generating better prompts? Upgrade to <Text style={{ fontWeight: '700' }}>RePromptt Plus</Text> for <Text style={{ fontStyle: 'italic' }}>unlimited prompt creations</Text>, personalized tips, and the ability to save your favorites—perfect for mastering AI at your own pace.
+              Love the ease of generating better prompts? Upgrade to <Text style={{ fontWeight: '700' }}>pro_monthly</Text> for <Text style={{ fontStyle: 'italic' }}>unlimited prompt creations</Text>, personalized tips, and the ability to save your favorites—perfect for mastering AI at your own pace.
               Start today for just <Text style={{ fontWeight: '700' }}>$11.99/month</Text> and transform your AI experience!
             </Text>
             <TouchableOpacity style={[styles.button, { backgroundColor: '#5b3ba3' }]} onPress={() => router.push("/menu")}> 
-              <Text style={styles.buttonText}>Unlimited Prompts</Text>
+              <Text style={styles.buttonText}>Get Unlimited Prompts</Text>
             </TouchableOpacity>
           </View>
         )}

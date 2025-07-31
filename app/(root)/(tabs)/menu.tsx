@@ -142,11 +142,11 @@ function Menu() {
 
           {!user.isPremium && (
             <View style={styles.premiumInfoBox}>
-              <Text style={styles.premiumInfoTitle}>✨ Unlock Plus</Text>
+              <Text style={styles.premiumInfoTitle}>✨ Unlock pro_monthly</Text>
               <Text style={styles.premiumFeature}>- Unlimited Prompts</Text>
               <Text style={styles.premiumFeature}>- Advanced Learnings</Text>
               <Text style={styles.premiumFeature}>- Personalized response</Text>
-              <Text style={styles.premiumFeature}>- Early Access to New Features</Text>
+              <Text style={styles.premiumFeature}></Text>
               <TouchableOpacity style={styles.premiumBtn} onPress={() => router.replace('/revenue')}>
                 <Text style={styles.btnText}>Upgrade to Premium 👑</Text>
               </TouchableOpacity>
@@ -202,12 +202,13 @@ function Menu() {
           </TouchableOpacity>
           <View style={styles.divider} />
           <View style={styles.premiumInfoBox}>
-            <Text style={styles.premiumInfoTitle}>✨ Unlock Plus</Text>
+            <Text style={styles.premiumInfoTitle}>✨ Unlock pro_monthly</Text>
             <Text style={styles.premiumFeature}>- Unlimited Prompts Correction</Text>
             <Text style={styles.premiumFeature}>- Advanced Learnings</Text>
             <Text style={styles.premiumFeature}>- Personalized response</Text>
+            <Text style={styles.premiumFeature}></Text>
             <TouchableOpacity style={styles.premiumBtn} onPress={() => router.replace('/revenue')}>
-                <Text style={styles.btnText}>Upgrade to Premium 👑</Text>
+                <Text style={styles.btnText}>Upgrade 👑</Text>
             </TouchableOpacity>
           </View>
         </View>

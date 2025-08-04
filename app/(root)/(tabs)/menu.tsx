@@ -141,15 +141,23 @@ function Menu() {
           </View>
 
           {!user.isPremium && (
+            <View>
+             <View style={styles.premiumInfoBox}>
+            <Text style={styles.premiumInfoTitle}> Current: Free Plan $0/month</Text>
+            <Text style={styles.premiumFeature}>- 2 prompts per day</Text>
+            <Text style={styles.premiumFeature}>- Basic feedback & prompt Learning</Text>
+            <Text style={styles.premiumFeature}>- Access to community support</Text>
+          </View>
             <View style={styles.premiumInfoBox}>
-              <Text style={styles.premiumInfoTitle}>✨ Unlock pro_monthly</Text>
+              <Text style={styles.premiumInfoTitle}>Unlock Pro Monthly - $11.99 /month</Text>
               <Text style={styles.premiumFeature}>- Unlimited Prompts</Text>
               <Text style={styles.premiumFeature}>- Advanced Learnings</Text>
-              <Text style={styles.premiumFeature}>- Personalized response</Text>
+              <Text style={styles.premiumFeature}>- $11.99 /month</Text>
               <Text style={styles.premiumFeature}></Text>
               <TouchableOpacity style={styles.premiumBtn} onPress={() => router.replace('/revenue')}>
                 <Text style={styles.btnText}>Upgrade to Premium 👑</Text>
               </TouchableOpacity>
+            </View>
             </View>
           )}
 
@@ -201,12 +209,18 @@ function Menu() {
             <Text style={styles.secondaryText}>How to Use?</Text>
           </TouchableOpacity>
           <View style={styles.divider} />
+           <View style={styles.premiumInfoBox}>
+            <Text style={styles.premiumInfoTitle}>Free Plan $0/month</Text>
+            <Text style={styles.premiumFeature}>- 2 prompts per day</Text>
+            <Text style={styles.premiumFeature}>- Basic feedback & prompt Learning</Text>
+            <Text style={styles.premiumFeature}>- Access to community support</Text>
+          </View>
+           <View style={styles.divider} />
           <View style={styles.premiumInfoBox}>
-            <Text style={styles.premiumInfoTitle}>✨ Unlock pro_monthly</Text>
+            <Text style={styles.premiumInfoTitle}>Unlock Pro monthly - $11.99/month</Text>
             <Text style={styles.premiumFeature}>- Unlimited Prompts Correction</Text>
             <Text style={styles.premiumFeature}>- Advanced Learnings</Text>
-            <Text style={styles.premiumFeature}>- Personalized response</Text>
-            <Text style={styles.premiumFeature}></Text>
+            <Text style={styles.premiumFeature}>- $11.99 /month</Text>
             <TouchableOpacity style={styles.premiumBtn} onPress={() => router.replace('/revenue')}>
                 <Text style={styles.btnText}>Upgrade 👑</Text>
             </TouchableOpacity>
@@ -317,6 +331,7 @@ const styles = StyleSheet.create({
   },
   premiumInfoTitle: {
     fontWeight: "700",
+    textAlign:'center',
     fontSize: 16,
     color: "#5b3ba3",
     marginBottom: 6,

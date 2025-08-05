@@ -25,7 +25,9 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.repromptt.repromptt",
-      "permissions": ["com.android.vending.BILLING"]
+      "permissions": [
+        "com.android.vending.BILLING"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -56,7 +58,8 @@
           ]
         }
       ],
-      "./plugins/withRevenueCat"
+      "./plugins/withRevenueCat",
+      "react-native-iap"
     ],
     "experiments": {
       "typedRoutes": true

@@ -278,8 +278,8 @@ const handleGenerate = async () => {
 
         {!results && (
           <View style={{ backgroundColor: '#f8efff', margin: 20, padding: 20, borderRadius: 12, borderColor: '#d8c3ff', borderWidth: 1 }}>
-            <Text style={{ fontSize: 16, fontWeight: '700', color: '#5b3ba3', textAlign:'center'}}>Learn prompt generation with Repromptt</Text>
-           
+
+
           </View>
         )}
 

@@ -95,7 +95,6 @@ function Revenue() {
           <Text style={styles.infoLabel}>- Unlock Unlimited Prompts Generation</Text>
           <Text style={styles.infoLabel}>- Get advanced Learning Features</Text>
           
-
           
 
           <TouchableOpacity style={styles.premiumBtn} onPress={purchase}>
@@ -111,6 +110,7 @@ function Revenue() {
           <View style={{alignItems:'center'}}>
           <TouchableOpacity onPress={() => Linking.openURL('https://www.apple.com/legal/internet-services/itunes/dev/stdeula/')}>
             <Text style={{textDecorationLine: 'underline'}}>Terms of Use</Text>
+
           </TouchableOpacity>
           <TouchableOpacity onPress={() => Linking.openURL('https://www.repromptt.com/privacy_policy.md')}>
             <Text style={{textDecorationLine: 'underline'}}>Privacy Policy</Text>

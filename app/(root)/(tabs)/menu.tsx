@@ -155,7 +155,7 @@ function Menu() {
               <Text style={styles.premiumFeature}>- $11.99 /month</Text>
               <Text style={styles.premiumFeature}></Text>
               <TouchableOpacity style={styles.premiumBtn} onPress={() => router.replace('/revenue')}>
-                <Text style={styles.btnText}>Upgrade to Premium 👑</Text>
+                <Text style={styles.btnText}>Upgrade 👑</Text>
               </TouchableOpacity>
             </View>
             </View>

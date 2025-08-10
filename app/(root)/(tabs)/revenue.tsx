@@ -123,16 +123,32 @@ function Revenue() {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <Header />
 
-        <View style={{ padding: 20 }} style={styles.infoCardFull}>
-          <Text style={styles.premiumInfoTitle}>Upgrade to Premium</Text>
+        <View style={styles.infoCardFull}>
+          <Text style={styles.premiumInfoTitle}>Repromptt Plus</Text>
+           <Text style={styles.infoLabel}></Text>
           <Text style={styles.infoLabel}>- Unlock Unlimited Prompts Generation</Text>
-            <Text style={styles.infoLabel}>- Get advanced Prompt Learning Features</Text>
-            <Text style={styles.infoLabel}>- Early Access to New Features and Faster community Support</Text>
-             <Text style={styles.infoLabel}>- Be 10x productive</Text>
-
-          <TouchableOpacity  style={styles.premiumBtn} onPress={purchase}>
-            <Text style={styles.btnText}>Subscribe Now</Text>
+          <Text style={styles.infoLabel}>- Get advanced Learning Features</Text>
+          <Text style={styles.infoLabel}>- $11.99/month (Base Price, May vary on your country Regions)</Text>
+          <TouchableOpacity style={styles.premiumBtn} onPress={purchase}>
+            <Text style={styles.btnText}>Subscribe</Text>
           </TouchableOpacity>
+           <View style={{alignItems:'center'}}>
+          <TouchableOpacity >
+            <Text style={{color:'grey'}}>with auto-renew, cancel anytime</Text>
+            <Text></Text>
+          </TouchableOpacity>
+        
+          </View>
+          <View style={{alignItems:'center'}}>
+          <TouchableOpacity onPress={() => Linking.openURL('https://play.google.com/about/play-terms/')}>
+            <Text style={{textDecorationLine: 'underline'}}>Google Play Terms</Text>
+
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => Linking.openURL('https://www.repromptt.com/privacy_policy.md')}>
+            <Text style={{textDecorationLine: 'underline'}}>Privacy & Terms</Text>
+          </TouchableOpacity>
+          </View>
+
         </View>
       </ScrollView>
     </SafeAreaView>

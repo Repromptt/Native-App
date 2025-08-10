@@ -113,15 +113,24 @@ function Menu() {
           </View>
 
           {!user.isPremium && (
+           <View>
             <View style={styles.premiumInfoBox}>
-              <Text style={styles.premiumInfoTitle}>✨ Unlock Plus</Text>
+              <Text style={styles.premiumInfoTitle}>Unlock Repromptt Plus </Text>
               <Text style={styles.premiumFeature}>- Unlimited Prompts</Text>
               <Text style={styles.premiumFeature}>- Advanced Learnings</Text>
-              <Text style={styles.premiumFeature}>- Personalized response</Text>
-              <Text style={styles.premiumFeature}>- Early Access to New Features</Text>
+              
+              <Text style={styles.premiumFeature}></Text>
               <TouchableOpacity style={styles.premiumBtn} onPress={() => router.replace('/revenue')}>
-                <Text style={styles.btnText}>Upgrade to Premium 👑</Text>
+                <Text style={styles.btnText}> Upgrade to Repromptt Plus </Text>
               </TouchableOpacity>
+                        <View style={{alignItems:'center'}}>
+                        
+                        <TouchableOpacity onPress={() => Linking.openURL('https://www.repromptt.com/privacy_policy.md')}>
+                          <Text style={{textDecorationLine: 'underline', color:'grey'}}>Privacy & terms</Text>
+                        </TouchableOpacity>
+                        </View>
+              
+            </View>
             </View>
           )}
 
@@ -173,12 +182,7 @@ function Menu() {
             <Text style={styles.secondaryText}>How to Use?</Text>
           </TouchableOpacity>
           <View style={styles.divider} />
-          <View style={styles.premiumInfoBox}>
-            <Text style={styles.premiumInfoTitle}>✨ Unlock Plus</Text>
-            <Text style={styles.premiumFeature}>- Unlimited Prompts Correction</Text>
-            <Text style={styles.premiumFeature}>- Advanced Learnings</Text>
-            <Text style={styles.premiumFeature}>- Personalized response</Text>
-          </View>
+        
         </View>
       </ScrollView>
     );

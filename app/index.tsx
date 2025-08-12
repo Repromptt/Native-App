@@ -7,6 +7,7 @@ import {
   Image,
   Dimensions,
   ActivityIndicator,
+  Alert,
   ScrollView,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -15,6 +16,7 @@ import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import images from "@/constants/images";
 import * as Updates from 'expo-updates';
+import { useDeviceOrientation } from '@react-native-community/hooks';
 
 const slides = [
   {
@@ -45,7 +47,16 @@ export default function Index() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(-1); // -1 = Get Started
+const orientation = useDeviceOrientation();
 
+  useEffect(() => {
+    if (orientation === "landscape") {
+      Alert.alert(
+        'Rotate Device',
+        'Please switch back to portrait mode for the best experience.'
+      );
+    }
+  }, [orientation]);
   useEffect(() => {
     const checkFirstTime = async () => {
       const token = await AsyncStorage.getItem("FirstTime");
@@ -78,18 +89,21 @@ export default function Index() {
 
   if (currentSlide === -1) {
     return (
-      <LinearGradient
+      
+        
+          <LinearGradient
         colors={["#0f051d", "#3b0c59", "#833ab4"]}
-        style={styles.container}
-      >
-        <SafeAreaView style={styles.centered}>
+        style={styles.container}>
+              <SafeAreaView style={styles.slide}>
+
           <Image source={images.icon} style={styles.logo} />
           <Text style={styles.welcome}>RePromptt</Text>
           <TouchableOpacity style={styles.startButton} onPress={() => setCurrentSlide(0)}>
             <Text style={styles.buttonText}>Get Started</Text>
           </TouchableOpacity>
-        </SafeAreaView>
-      </LinearGradient>
+          </SafeAreaView>
+          </LinearGradient>
+       
     );
   }
 

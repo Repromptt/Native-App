@@ -2,10 +2,9 @@ import { useEffect } from "react";
 import { Stack } from "expo-router";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
-import { enableScreens } from "react-native-screens";
 import "./globals.css";
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-enableScreens();
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     "Rubik-Bold": require("../assets/fonts/Rubik-Bold.ttf"),
@@ -27,7 +26,8 @@ export default function RootLayout() {
   }
 
   return (
-    
+      <SafeAreaProvider>
       <Stack screenOptions={{ headerShown: false }} />
+      </SafeAreaProvider>
   );
 }

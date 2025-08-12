@@ -21,6 +21,7 @@ import icons from "@/constants/icons";
 import images from "@/constants/images";
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Updates from 'expo-updates';
+import { useDeviceOrientation } from '@react-native-community/hooks';
 
 import { MaterialIcons } from "@expo/vector-icons";
 
@@ -34,6 +35,17 @@ export default function Login() {
   const baseURL = "https://reprompttserver.onrender.com/api";
  const [pass, setPass] = useState('');
 const [showPassword, setShowPassword] = useState(false);
+
+const orientation = useDeviceOrientation();
+
+  useEffect(() => {
+    if (orientation === "landscape") {
+      Alert.alert(
+        'Rotate Device',
+        'Please switch back to portrait mode for the best experience.'
+      );
+    }
+  }, [orientation]);
 
   useEffect(() => {
     const checkLogin = async () => {

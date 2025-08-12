@@ -3,7 +3,7 @@
     "name": "Repromptt",
     "slug": "repromptt",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
@@ -25,7 +25,8 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.repromptt.repromptt",
-      "permissions": ["com.android.vending.BILLING"]
+      "permissions": ["com.android.vending.BILLING"],
+      "theme": "@android:style/Theme.DeviceDefault.NoActionBar"
     },
     "web": {
       "bundler": "metro",
@@ -38,9 +39,7 @@
         "expo-splash-screen",
         {
           "image": "./assets/images/splash.png",
-          "resizeMode": "cover",
-          "backgroundColor": "#ffffff",
-          "enableFullScreenImage_legacy": true
+          "resizeMode": "cover"
         }
       ],
       [
@@ -56,7 +55,8 @@
           ]
         }
       ],
-      "./plugins/withRevenueCat"
+      "./plugins/withRevenueCat",
+      "./plugins/withEdgeToEdge"
     ],
     "experiments": {
       "typedRoutes": true

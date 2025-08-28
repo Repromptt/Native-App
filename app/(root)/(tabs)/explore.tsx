@@ -1,160 +1,118 @@
-import React, { useState, useEffect } from 'react';
-import { View,Share, Text, ScrollView, TouchableOpacity, TextInput, Alert, ActivityIndicator, Image, StyleSheet, Linking } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import Modal from 'react-native-modal';
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Share,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  TextInput,
+  Alert,
+  ActivityIndicator,
+  Linking,
+  StyleSheet,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Modal from "react-native-modal";
 import { useRouter } from "expo-router";
-import icons from "@/constants/icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as Clipboard from 'expo-clipboard';
-import Constants from 'expo-constants';
+import * as Clipboard from "expo-clipboard";
 import { MaterialIcons } from "@expo/vector-icons";
-import { linkTo } from 'expo-router/build/global-state/routing';
-import { BackHandler } from 'react-native';
+import LottieView from 'lottie-react-native';
 
 const Explore = () => {
   const router = useRouter();
-  const [user, setUser] = useState(null);
   const [guestCount, setGuestCount] = useState(0);
-  const [inputPrompt, setInputPrompt] = useState('');
+  const [inputPrompt, setInputPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
   const [selectedPrompt, setSelectedPrompt] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [pro, setPro] = useState(false);
+  const [dropdownVisible, setDropdownVisible] = useState(false);
 
+  // Load subscription status & usage count
   useEffect(() => {
-    const fetchUser = async () => {
+    const initData = async () => {
       try {
-        const value = await AsyncStorage.getItem("user");
-        console.log(value);
-        if (value !== null) {
-          const userData = JSON.parse(value);
-          setUser(userData);
-        }
-      } catch (e) {
-        console.error("Failed to fetch user:", e);
-      }
-    };
-    fetchUser();
-  }, []);
+        // Load daily prompt count
+        const storedCount = await AsyncStorage.getItem("pcount");
+        setGuestCount(storedCount ? parseInt(storedCount, 10) : 0);
 
-  useEffect(() => {
-    const fetchGuestCount = async () => {
-      try {
-        const vali = await AsyncStorage.getItem("pcount");
-        if (vali === null) {
-          await AsyncStorage.setItem("pcount", "0");
-          setGuestCount(0);
-        } else {
-          setGuestCount(parseInt(vali, 10));
-        }
-      } catch (e) {
-        console.error("Failed to fetch guest count:", e);
-      }
-    };
-    fetchGuestCount();
-  }, []);
-  
-  useEffect(() => {
-    const resetCountIfNewDay = async () => {
-      try {
+        // Load subscription status
+        const premiumStatus = await AsyncStorage.getItem("premium");
+        setPro(premiumStatus === "true");
+
+        // Reset count if it's a new day
         const today = new Date().toDateString();
         const lastDate = await AsyncStorage.getItem("lastDate");
-
         if (lastDate !== today) {
           await AsyncStorage.setItem("pcount", "0");
           await AsyncStorage.setItem("lastDate", today);
+          setGuestCount(0);
         }
-      } catch (error) {
-        console.error("Error resetting count:", error);
+      } catch (e) {
+        console.error("Failed to initialize data:", e);
       }
     };
-    resetCountIfNewDay();
+    initData();
   }, []);
 
-const handleGenerate = async () => {
-  if (!inputPrompt) return Alert.alert("Error", "Please enter a prompt first.");
+  const handleGenerate = async () => {
+    if (!inputPrompt)
+      return Alert.alert("Error", "Please enter a prompt first.");
 
-  if (user !== null && !user.isPremium && user.count >= 2)
-    return Alert.alert("Daily Limit Reached", "Free users can only generate 2 prompts per day. Upgrade for more!",
-   [
-      {
-        text: "Upgrade",
-        onPress: () =>  router.push("/menu"), // or any screen name
-      },
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
-    ]
-  );
-  if (user == null && guestCount >= 2)
-    return Alert.alert("Limit Reached", "Signup/login for Basic plan",
-  [
-      {
-        text: "login",
-        onPress: () => router.push("/login"), // or any screen name
-      },
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
-    ]);
-
-  setLoading(true);
-  setResults(null);
-  const gmail = user?.email || "t@gmail.com";
-
-  try {
-    const response = await fetch("https://reprompttserver.onrender.com/api/correct-prompt", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ gmail, inputPrompt }),
-    });
-
-    if (!response.ok) throw new Error((await response.json()).error || "Something went wrong");
-
-    const data = await response.json();
-
-    // ✅ Show result immediately
-    setInputPrompt('');
-    setResults({ original: inputPrompt, corrected: data.correctedPrompt || [] });
-
-    // 🧠 Update count or user info asynchronously after showing the result
-    if (user == null) {
-      const newCount = guestCount + 1;
-      setGuestCount(newCount);
-      await AsyncStorage.setItem("pcount", newCount.toString());
-    } else {
-      // 🔄 Detach backend fetch to update user info AFTER showing result
-      (async () => {
-        try {
-          const updatedUserRes = await fetch("https://reprompttserver.onrender.com/api/get-info", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: user.email }),
-          });
-
-          if (updatedUserRes.ok) {
-            const updatedUser = await updatedUserRes.json();
-            setUser(updatedUser);
-            await AsyncStorage.setItem("user", JSON.stringify(updatedUser));
-          } else {
-            console.warn("Failed to fetch updated user info.");
-          }
-        } catch (err) {
-          console.error("Background user update error:", err.message);
-        }
-      })();
+    // Enforce daily limit for free users
+    if (!pro && guestCount >= 3) {
+      return Alert.alert(
+        "Daily Limit Reached",
+        "Free users can only generate 3 prompts per day. Upgrade for unlimited prompts!",
+        [
+          { text: "Upgrade", onPress: () => router.push("/menu") },
+          { text: "Cancel", style: "cancel" },
+        ]
+      );
     }
-  } catch (error) {
-    console.error("Error generating prompt:", error.message);
-    Alert.alert("Error", "Failed to generate prompt. Please try again.");
-  } finally {
-    setLoading(false);
-  }
-};
 
+    setLoading(true);
+    setResults(null);
 
+    try {
+      const response = await fetch(
+        "https://reprompttserver.onrender.com/api/correct-prompt",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            gmail: "t@gmail.com",
+            inputPrompt,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error((await response.json()).error || "Something went wrong");
+      }
+
+      const data = await response.json();
+
+      setInputPrompt("");
+      setResults({
+        original: inputPrompt,
+        corrected: data.correctedPrompt || [],
+      });
+
+      if (!pro) {
+        const newCount = guestCount + 1;
+        setGuestCount(newCount);
+        await AsyncStorage.setItem("pcount", newCount.toString());
+      }
+    } catch (error) {
+      console.error("Error generating prompt:", error.message);
+      Alert.alert("Error", "Failed to generate prompt. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleCopy = async (text) => {
     await Clipboard.setStringAsync(text);
@@ -173,7 +131,19 @@ const handleGenerate = async () => {
     }
   };
 
-  const [dropdownVisible, setDropdownVisible] = useState(false);
+  const PromptCard = ({ text, onCopy, onSearch }) => (
+    <View style={styles.promptCard}>
+      <Text style={styles.promptText}>"{text}"</Text>
+      <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 8, marginTop: 10 }}>
+        <TouchableOpacity onPress={onCopy} style={styles.copyButton}>
+          <Text style={styles.copyText}>Copy</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => onSearch(text)} style={styles.copyButton}>
+          <Text style={styles.copyText}>Answer</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -201,15 +171,15 @@ const handleGenerate = async () => {
                     router.push("/menu");
                   }}
                 >
-                  <Text style={styles.menuText}>{user ? "Account" : "Account"}</Text>
+                  <Text style={styles.menuText}>Account</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   style={styles.menuItem}
                   onPress={async () => {
                     setDropdownVisible(false);
-                    await AsyncStorage.removeItem('FirstTime');
-                    router.push('/');
+                    await AsyncStorage.removeItem("FirstTime");
+                    router.push("/");
                   }}
                 >
                   <Text style={styles.menuText}>How to Use ?</Text>
@@ -225,44 +195,29 @@ const handleGenerate = async () => {
                   <Text style={styles.menuText}>About Us</Text>
                 </TouchableOpacity>
 
-                 <TouchableOpacity
-  style={styles.menuItem}
-  onPress={async () => {
-    try {
-      const result = await Share.share({
-        message:
-          'Hey! I’ve been using this app called RePromptt – it helps you create better AI prompts. Thought you might like it! 😊 https://repromptt.com',
-      });
-
-      // Optional: handle different share outcomes
-      if (result.action === Share.sharedAction) {
-        if (result.activityType) {
-          console.log('Shared with activity type: ', result.activityType);
-        } else {
-          console.log('Shared successfully');
-        }
-      } else if (result.action === Share.dismissedAction) {
-        console.log('Share dismissed');
-      }
-    } catch (error) {
-      console.error('Error sharing:', error.message);
-    }
-  }}
->
-  <Text style={styles.menuText}>Invite Friends</Text>
-</TouchableOpacity>
-
+                <TouchableOpacity
+                  style={styles.menuItem}
+                  onPress={async () => {
+                    try {
+                      await Share.share({
+                        message:
+                          "Hey! I’ve been using RePromptt – it helps you create better AI prompts. Check it out: https://repromptt.com",
+                      });
+                    } catch (error) {
+                      console.error("Error sharing:", error.message);
+                    }
+                  }}
+                >
+                  <Text style={styles.menuText}>Invite Friends</Text>
+                </TouchableOpacity>
               </View>
             )}
           </View>
         </View>
 
-        <View style={styles.userRow}>
-          <Text style={styles.welcomeText}> </Text>
-        </View>
-
         <View style={styles.container}>
-          <Text style={styles.label}>Write prompt here:</Text>
+          <Text style={styles.label}></Text>
+           <Text style={styles.label}>Write prompt here:</Text>
           <TextInput
             style={styles.input}
             value={inputPrompt}
@@ -277,18 +232,44 @@ const handleGenerate = async () => {
         </View>
 
         {!results && (
-          <View style={{ backgroundColor: '#f8efff', margin: 20, padding: 20, borderRadius: 12, borderColor: '#d8c3ff', borderWidth: 1 }}>
+  <View style={{
+    alignItems: 'center',
+    margin: 20,
+    padding: 20,
+    backgroundColor: "#f8efff",
+    borderRadius: 12,
+    borderColor: "#d8c3ff",
+    borderWidth: 1
+  }}>
+    <LottieView
+      source={require('../../../assets/lottie/ai.json')}
+      autoPlay
+      loop
+      style={{ width: 200, height: 200 }}
+    />
+    <Text style={{
+      fontSize: 16,
+      fontWeight: "700",
+      color: "#5b3ba3",
+      marginTop: 10,
+      textAlign: 'center'
+    }}>
+      Learn to Use AI With Repromptt
+    </Text>
+  </View>
+)}
 
-
-          </View>
-        )}
 
         {results && (
           <View style={styles.resultsContainer}>
             {results.corrected.map((item, index) => (
               <View key={index} style={styles.correctedItem}>
                 <Text style={styles.sectionTitle}>Corrected Prompt {index + 1}</Text>
-                <PromptCard text={item.prompt} onCopy={() => handleCopy(item.prompt)} onSearch={() => openSearchModal(item.prompt)} />
+                <PromptCard
+                  text={item.prompt}
+                  onCopy={() => handleCopy(item.prompt)}
+                  onSearch={() => openSearchModal(item.prompt)}
+                />
                 <Text style={styles.learningText}>
                   💡Learning-{"\n"}
                   <Text style={styles.learningText2}>{item.learning}</Text>
@@ -300,7 +281,11 @@ const handleGenerate = async () => {
               </View>
             ))}
             <Text style={styles.sectionTitle}>Original Prompt</Text>
-            <PromptCard text={results.original} onCopy={() => handleCopy(results.original)} onSearch={() => openSearchModal(results.original)} />
+            <PromptCard
+              text={results.original}
+              onCopy={() => handleCopy(results.original)}
+              onSearch={() => openSearchModal(results.original)}
+            />
           </View>
         )}
 
@@ -313,35 +298,24 @@ const handleGenerate = async () => {
             <TouchableOpacity onPress={() => handleSearch("https://copilot.microsoft.com/?q=")} style={styles.button}>
               <Text style={styles.buttonText}>Copilot</Text>
             </TouchableOpacity>
-            <TouchableOpacity  style={styles.button}>
-              <Text style={styles.buttonText}>Gemini<Text style={{fontSize: 10}}>( Coming soon)</Text></Text>
-            </TouchableOpacity>
-            <TouchableOpacity  style={styles.button}>
-              <Text style={styles.buttonText}>Grok<Text style={{fontSize: 10}}>( Coming soon)</Text></Text>
-            </TouchableOpacity>
+            <TouchableOpacity 
+  onPress={() => handleSearch("https://gemini.google.com/app?q=")} 
+  style={styles.button}
+>
+  <Text style={styles.buttonText}>Gemini</Text>
+</TouchableOpacity>
+          <TouchableOpacity 
+  onPress={() => handleSearch("https://www.perplexity.ai/search?q=")} 
+  style={styles.button}
+>
+  <Text style={styles.buttonText}>Perplexity</Text>
+</TouchableOpacity>
           </View>
         </Modal>
       </ScrollView>
     </SafeAreaView>
   );
 };
-
-const PromptCard = ({ text, onCopy, onSearch }) => (
-  <View style={styles.promptCard}>
-    <Text style={styles.promptText}>
-      "{text}"
-    </Text>
-    <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 8, marginTop: 10 }}>
-      <TouchableOpacity onPress={onCopy} style={styles.copyButton}>
-        <Text style={styles.copyText}>Copy</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => onSearch(text)} style={styles.copyButton}>
-        <Text style={styles.copyText}>Answer</Text>
-      </TouchableOpacity>
-    </View>
-  </View>
-);
-
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -351,16 +325,15 @@ const styles = StyleSheet.create({
   scrollView: {
     paddingBottom: 40,
   },
-   dropdownContainer: {
+  dropdownContainer: {
     position: "relative",
     alignItems: "flex-end",
   },
   dropdownToggle: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical:20,
-    paddingLeft:10,
-
+    paddingVertical: 20,
+    paddingLeft: 10,
   },
   profileIcon: {
     width: 24,
@@ -387,22 +360,21 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderColor:"#e6d6ff",
-    justifyContent:"center"
-
+    borderColor: "#e6d6ff",
+    justifyContent: "center",
   },
   menuText: {
     fontSize: 16,
     fontWeight: 500,
     paddingHorizontal: 8,
     color: "#fff",
-    textAlign:"right",
+    textAlign: "right",
   },
   modalContainer: {
     backgroundColor: "#e6d6ff",
     borderRadius: 24,
     padding: 24,
-    margin:18,
+    margin: 18,
     shadowColor: "#5b3ba3",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.5,
@@ -429,7 +401,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 2,
-    zIndex:300,
+    zIndex: 300,
   },
   headerTitle: {
     fontSize: 28,
@@ -560,6 +532,5 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
 });
-
 
 export default Explore;

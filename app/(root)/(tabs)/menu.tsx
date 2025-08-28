@@ -1,234 +1,141 @@
-// MENU.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
-  View, Text, ScrollView, TouchableOpacity, Alert,
-  StyleSheet, Image, ActivityIndicator, Linking,
-  Modal, TextInput, Platform
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Alert,
+  StyleSheet,
+  Image,
+  ActivityIndicator,
+  Linking,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import icons from '@/constants/icons';
-import * as Updates from 'expo-updates';
-import * as RNIap from 'react-native-iap';
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import icons from "@/constants/icons";
+import { checkUserSubscription } from "./revenue";
 
 function Menu() {
   const router = useRouter();
-  const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [confirmEmail, setConfirmEmail] = useState('');
   const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [premium, setPremium] = useState(false);
+  const [count, setCount] = useState(0);
 
   useEffect(() => {
-    const fetchAndSyncUser = async () => {
-      try {
-        const value = await AsyncStorage.getItem('user');
-        if (value) {
-          const localUser = JSON.parse(value);
-          const res = await fetch('https://reprompttserver.onrender.com/api/get-info', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: localUser.email }),
-          });
+    const init = async () => {
+      const isPro = await checkUserSubscription();
+      setPremium(isPro);
 
-          if (res.ok) {
-            const updatedUser = await res.json();
-            await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
-            setUser(updatedUser);
+      const storedCount = await AsyncStorage.getItem("pcount");
+      setCount(storedCount ? parseInt(storedCount) : 0);
 
-            // 🔁 Check subscription status (iOS only)
-          if (Platform.OS === 'ios') {
-            try {
-              await RNIap.initConnection();
-              const purchases = await RNIap.getAvailablePurchases();
-
-              const isSubscribed = purchases.some(
-                (purchase) =>
-                  purchase.productId === 'pro_monthly' && // your iOS product ID
-                  (purchase.transactionReceipt || purchase.originalTransactionId)
-              );
-
-              const endpoint = isSubscribed
-                ? 'access-premium'
-                : 'revoke-premium';
-
-              await fetch(`https://reprompttserver.onrender.com/api/${endpoint}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: localUser.email }),
-              });
-            } catch (err) {
-              console.warn('Subscription check failed:', err);
-            } finally {
-              RNIap.endConnection();
-            }
-          }
-          }
-        }
-      } catch (err) {
-        console.error('Fetch user failed:', err);
-      } finally {
-        setIsLoading(false);
-      }
+      setIsLoading(false);
     };
-    fetchAndSyncUser();
+
+    init();
   }, []);
 
-  const handleLogout = async () => {
-    Alert.alert('Confirm Logout', 'Are you sure?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Logout', style: 'destructive', onPress: async () => {
-          await AsyncStorage.multiRemove(['user', 'FirstTime']);
-          router.replace('/');
-          Updates.reloadAsync();
-        },
-      },
-    ]);
-  };
-   const handleDelete = () => setShowDeleteModal(true);
-
-  const confirmDeleteAccount = async () => {
-    if (confirmEmail !== user.email) return Alert.alert('Error', 'Email mismatch');
-    try {
-      const res = await fetch('https://reprompttserver.onrender.com/api/deleteacc-2345rwe4h94f2e', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user.email, password: user.password }),
-      });
-      if (res.ok) {
-        await AsyncStorage.multiRemove(['user', 'FirstTime']);
-        Alert.alert('Deleted', 'Account removed');
-        router.replace('/');
-        Updates.reloadAsync();
-      } else Alert.alert('Error', 'Failed to delete account');
-    } catch (err) {
-      console.error('Delete error:', err);
-      Alert.alert('Error', 'Unexpected error');
-    }
-  };
-
-  const handleCheckFirstTime = async () => {
-    await AsyncStorage.removeItem('FirstTime');
-    router.push('/');
-  };
-
-
   if (isLoading) {
-    return <SafeAreaView style={styles.centered}><ActivityIndicator size="large" color="#052659" /></SafeAreaView>;
+    return (
+      <SafeAreaView style={styles.centered}>
+        <ActivityIndicator size="large" color="#052659" />
+      </SafeAreaView>
+    );
   }
 
-  return <SafeAreaView style={styles.safeArea}>{user ? renderUserView() : renderGuestView()}</SafeAreaView>;
+  const promptLeft = premium ? "∞" : `${Math.max(0, 3 - count)}`;
 
-  function renderUserView() {
-    const promptLeft = user.isPremium ? '∞' : `${Math.max(0, 2 - user.count)}`;
-    return (
+  return (
+    <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <Header />
         <View style={styles.profileContainer}>
           <Image source={icons.person} style={styles.avatarLarge} />
-          <Text style={styles.username}>{user.name || 'User'}</Text>
+          <Text style={styles.username}>Welcome Back</Text>
           <View style={styles.divider} />
+
           <View style={styles.infoCardFull}>
-            <Text style={styles.infoRow}><Text style={styles.infoLabel}>Mail: </Text>{user.email}</Text>
+            <Text style={styles.infoRow}>
+              <Text style={{ color: premium ? "#7a5af5" : "#5b3ba3" }}>
+                {premium ? "👑 Premium" : "Free User"}
+              </Text>
+            </Text>
             <View style={styles.divider} />
-            <Text style={styles.infoRow}><Text style={styles.infoLabel}>Plan: </Text><Text style={{ color: user.isPremium ? '#7a5af5' : '#5b3ba3' }}>{user.isPremium ? '👑 Premium' : '🆓 Basic'}</Text></Text>
-            <View style={styles.divider} />
-            <Text style={styles.infoRow}><Text style={styles.infoLabel}>Daily Prompts Left: </Text><Text style={{ color: user.isPremium ? '#00c26e' : '#5b3ba3', fontWeight: '900' }}>{promptLeft}</Text></Text>
+            <Text style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Daily Prompts Left: </Text>
+              <Text
+                style={{
+                  color: premium ? "#00c26e" : "#5b3ba3",
+                  fontWeight: "900",
+                }}
+              >
+                {promptLeft}
+              </Text>
+            </Text>
           </View>
 
-          {!user.isPremium && (
-            <View>
-             <View style={styles.premiumInfoBox}>
-            <Text style={styles.premiumInfoTitle}> Current: Free Plan $0/month</Text>
-            <Text style={styles.premiumFeature}>- 2 prompts per day</Text>
-            <Text style={styles.premiumFeature}>- Basic feedback & prompt Learning</Text>
-            <Text style={styles.premiumFeature}>- Access to community support</Text>
-          </View>
+          {!premium && (
             <View style={styles.premiumInfoBox}>
-              <Text style={styles.premiumInfoTitle}>Unlock Pro Monthly - $11.99 /month</Text>
+              <Text style={styles.premiumInfoTitle}>
+                Unlock Pro Monthly - $11.99 /month
+              </Text>
               <Text style={styles.premiumFeature}>- Unlimited Prompts</Text>
               <Text style={styles.premiumFeature}>- Advanced Learnings</Text>
-              <Text style={styles.premiumFeature}>- $11.99 /month</Text>
-              <Text style={styles.premiumFeature}></Text>
-              <TouchableOpacity style={styles.premiumBtn} onPress={() => router.replace('/revenue')}>
-                <Text style={styles.btnText}>Upgrade to Premium 👑</Text>
+              <TouchableOpacity
+                style={styles.premiumBtn}
+                onPress={() => router.replace("/revenue")}
+              >
+                <Text style={styles.btnText}> Upgrade to Pro Monthly </Text>
               </TouchableOpacity>
-            </View>
             </View>
           )}
 
           <View style={styles.divider} />
           <View style={styles.dropdownContainer}>
-            <TouchableOpacity style={styles.dropdownToggle} onPress={() => setDropdownVisible(!dropdownVisible)}>
-              <Text style={styles.secondaryText}>Account Options</Text>
-              <MaterialIcons name={dropdownVisible ? "keyboard-arrow-up" : "keyboard-arrow-down"} size={20} color="#5b3ba3" />
+            <TouchableOpacity
+              style={styles.dropdownToggle}
+              onPress={() => setDropdownVisible(!dropdownVisible)}
+            >
+              <Text style={styles.secondaryText}>Legals-</Text>
+              <MaterialIcons
+                name={
+                  dropdownVisible ? "keyboard-arrow-up" : "keyboard-arrow-down"
+                }
+                size={20}
+                color="#5b3ba3"
+              />
             </TouchableOpacity>
 
             {dropdownVisible && (
               <View style={styles.dropdownMenu}>
-                <TouchableOpacity style={styles.dangerBtn} onPress={handleLogout}><Text style={styles.dangerText}>Logout</Text></TouchableOpacity>
-                <TouchableOpacity style={styles.dangerBtn} onPress={() => Linking.openURL(`https://repromptt.com/privacy_policy.md`)}><Text style={styles.dangerText}>Privacy Policy</Text></TouchableOpacity>
-                <TouchableOpacity style={styles.dangerBtn} onPress={handleDelete}><Text style={styles.dangerText}>Delete Account</Text></TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.dangerBtn}
+                  onPress={() =>
+                    Linking.openURL(`https://repromptt.com/privacy_policy.md`)
+                  }
+                >
+                  <Text style={styles.dangerText}>Privacy Policy</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.dangerBtn}
+                  onPress={() =>
+                    Linking.openURL(
+                      `https://www.apple.com/legal/internet-services/itunes/dev/stdeula/`
+                    )
+                  }
+                >
+                  <Text style={styles.dangerText}>Apple EULA</Text>
+                </TouchableOpacity>
               </View>
             )}
           </View>
-
-          <Modal visible={showDeleteModal} transparent animationType="slide">
-            <View style={styles.modalOverlay}>
-              <View style={styles.modalContainer}>
-                <Text style={styles.modalTitle}>Confirm Account Deletion</Text>
-                <TextInput placeholder="Enter your email to confirm" style={styles.input} onChangeText={setConfirmEmail} value={confirmEmail} autoCapitalize="none" />
-                <View style={styles.modalButtons}>
-                  <TouchableOpacity style={styles.cancelBtn} onPress={() => setShowDeleteModal(false)}><Text style={styles.cancelText}>Cancel</Text></TouchableOpacity>
-                  <TouchableOpacity style={styles.confirmBtn} onPress={confirmDeleteAccount}><Text style={styles.confirmText}>Confirm</Text></TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          </Modal>
         </View>
       </ScrollView>
-    );
-  }
-
-  function renderGuestView() {
-    return (
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <Header />
-        <View style={{ padding: 20, alignItems: 'center' }}>
-          <Image source={icons.person} style={styles.avatarLarge} />
-          <Text style={styles.username}>Welcome Guest</Text>
-          <View style={styles.divider} />
-          <TouchableOpacity style={styles.primaryBtn} onPress={() => router.replace('/login')}>
-            <Text style={styles.btnText}>Login / Signup</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.secondaryBtn} onPress={handleCheckFirstTime}>
-            <Text style={styles.secondaryText}>How to Use?</Text>
-          </TouchableOpacity>
-          <View style={styles.divider} />
-           <View style={styles.premiumInfoBox}>
-            <Text style={styles.premiumInfoTitle}>Free Plan $0/month</Text>
-            <Text style={styles.premiumFeature}>- 2 prompts per day</Text>
-            <Text style={styles.premiumFeature}>- Basic feedback & prompt Learning</Text>
-            <Text style={styles.premiumFeature}>- Access to community support</Text>
-          </View>
-           <View style={styles.divider} />
-          <View style={styles.premiumInfoBox}>
-            <Text style={styles.premiumInfoTitle}>Unlock Pro monthly - $11.99/month</Text>
-            <Text style={styles.premiumFeature}>- Unlimited Prompts Correction</Text>
-            <Text style={styles.premiumFeature}>- Advanced Learnings</Text>
-            <Text style={styles.premiumFeature}>- $11.99 /month</Text>
-            <TouchableOpacity style={styles.premiumBtn} onPress={() => router.replace('/revenue')}>
-                <Text style={styles.btnText}>Upgrade 👑</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </ScrollView>
-    );
-  }
+    </SafeAreaView>
+  );
 
   function Header() {
     return (
@@ -236,17 +143,26 @@ function Menu() {
         <Text style={styles.headerText}>Repromptt</Text>
         <TouchableOpacity onPress={() => router.back()}>
           <MaterialIcons name="chevron-left" size={30} color="#5b3ba3" />
-          <Text style={{ fontSize: 10, textAlign: 'center', marginTop: -5, color: "#5b3ba3", fontWeight: '700' }}>Back</Text>
+          <Text
+            style={{
+              fontSize: 10,
+              textAlign: "center",
+              marginTop: -5,
+              color: "#5b3ba3",
+              fontWeight: "700",
+            }}
+          >
+            Back
+          </Text>
         </TouchableOpacity>
       </View>
     );
   }
 }
-
 export default Menu;
 
 const styles = StyleSheet.create({
-   safeArea: {
+  safeArea: {
     flex: 1,
     backgroundColor: "#f6f0ff", // soft lavender
   },
@@ -255,7 +171,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f6f0ff",
     flexGrow: 1,
   },
-   header: {
+  header: {
     backgroundColor: "#e6d6ff", // very light purple
     paddingVertical: 16,
     paddingHorizontal: 20,
@@ -331,7 +247,6 @@ const styles = StyleSheet.create({
   },
   premiumInfoTitle: {
     fontWeight: "700",
-    textAlign:'center',
     fontSize: 16,
     color: "#5b3ba3",
     marginBottom: 6,
@@ -343,9 +258,10 @@ const styles = StyleSheet.create({
   },
   premiumBtn: {
     backgroundColor: "#7a5af5",
-    paddingVertical: 12,
+    padding: 12,
     borderRadius: 10,
     width: "100%",
+    margin:'auto',
     alignItems: "center",
     marginBottom: 12,
   },
@@ -354,7 +270,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "700",
   },
-   primaryBtn: {
+  primaryBtn: {
     backgroundColor: "#5b3ba3",
     paddingVertical: 14,
     paddingHorizontal: 24,
@@ -364,7 +280,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 1,
     borderColor: "#4e2c86",
-    marginBottom:10,
+    marginBottom: 10,
   },
   secondaryBtn: {
     backgroundColor: "#f3ebff",
@@ -449,7 +365,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontWeight: "600",
   },
-   dropdownContainer: {
+  dropdownContainer: {
     width: "90%",
     marginBottom: 12,
   },
@@ -466,5 +382,17 @@ const styles = StyleSheet.create({
   },
   dropdownMenu: {
     marginTop: 8,
+  },
+  button: {
+    backgroundColor: "#7a5af5",
+    paddingVertical: 16,
+    borderRadius: 10,
+    alignItems: "center",
+    marginTop: 16,
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });

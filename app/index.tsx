@@ -16,7 +16,8 @@ import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import images from "@/constants/images";
 import * as Updates from 'expo-updates';
-import { useDeviceOrientation } from '@react-native-community/hooks';
+import { useDeviceOrientation } from "@react-native-community/hooks";
+
 
 const slides = [
   {

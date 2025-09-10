@@ -10,6 +10,7 @@ import Constants from 'expo-constants';
 import { MaterialIcons } from "@expo/vector-icons";
 import { linkTo } from 'expo-router/build/global-state/routing';
 import { BackHandler } from 'react-native';
+import LottieView from 'lottie-react-native';
 
 const Explore = () => {
   const router = useRouter();
@@ -291,19 +292,18 @@ const handleGenerate = async () => {
               borderRadius: 12,
               borderColor: "#d8c3ff",
               borderWidth: 1,
+              display:"flex",
+              justifyContent:'center',
+              alignItems:"center"
             }}
           >
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: "700",
-                color: "#5b3ba3",
-                marginBottom: 10,
-                textAlign:'center'
-              }}
-            >
-              Learn to Use AI With Repromptt
-            </Text>
+            
+            <LottieView
+      source={require('../../../assets/lottie/ai.json')}
+      autoPlay
+      loop
+      style={{ width: 200, height: 200 }}
+    />
           </View>
         )}
 

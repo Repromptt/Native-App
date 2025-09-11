@@ -11,7 +11,8 @@ import { MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import icons from '@/constants/icons';
 import * as Updates from 'expo-updates';
-import { checkUserSubscription } from './revenue';
+import * as RNIap from 'react-native-iap';
+
 
 function Menu() {
   const router = useRouter();
@@ -37,7 +38,34 @@ function Menu() {
             const updatedUser = await res.json();
             await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
             setUser(updatedUser);
-            await checkUserSubscription();
+
+            // 🔁 Check subscription status (iOS only)
+          if (Platform.OS === 'ios') {
+            try {
+              await RNIap.initConnection();
+              const purchases = await RNIap.getAvailablePurchases();
+
+              const isSubscribed = purchases.some(
+                (purchase) =>
+                  purchase.productId === 'pro_monthly' && // your iOS product ID
+                  (purchase.transactionReceipt || purchase.originalTransactionId)
+              );
+
+              const endpoint = isSubscribed
+                ? 'access-premium'
+                : 'revoke-premium';
+
+              await fetch(`https://reprompttserver.onrender.com/api/${endpoint}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: localUser.email }),
+              });
+            } catch (err) {
+              console.warn('Subscription check failed:', err);
+            } finally {
+              RNIap.endConnection();
+            }
+          }
           }
         }
       } catch (err) {
@@ -113,6 +141,7 @@ function Menu() {
           </View>
 
           {!user.isPremium && (
+
            <View>
             <View style={styles.premiumInfoBox}>
               <Text style={styles.premiumInfoTitle}>Unlock Repromptt Plus </Text>
@@ -122,6 +151,7 @@ function Menu() {
               <Text style={styles.premiumFeature}></Text>
               <TouchableOpacity style={styles.premiumBtn} onPress={() => router.replace('/revenue')}>
                 <Text style={styles.btnText}> Upgrade to Repromptt Plus </Text>
+
               </TouchableOpacity>
                         <View style={{alignItems:'center'}}>
                         
@@ -130,6 +160,7 @@ function Menu() {
                         </TouchableOpacity>
                         </View>
               
+            </View>
             </View>
             </View>
           )}
@@ -182,7 +213,7 @@ function Menu() {
             <Text style={styles.secondaryText}>How to Use?</Text>
           </TouchableOpacity>
           <View style={styles.divider} />
-        
+
         </View>
       </ScrollView>
     );
@@ -289,6 +320,7 @@ const styles = StyleSheet.create({
   },
   premiumInfoTitle: {
     fontWeight: "700",
+    textAlign:'center',
     fontSize: 16,
     color: "#5b3ba3",
     marginBottom: 6,

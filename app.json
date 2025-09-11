@@ -27,6 +27,7 @@
       "package": "com.repromptt.repromptt",
       "permissions": ["com.android.vending.BILLING"],
       "theme": "@android:style/Theme.DeviceDefault.NoActionBar"
+
     },
     "web": {
       "bundler": "metro",
@@ -57,6 +58,7 @@
       ],
       "./plugins/withRevenueCat",
       "./plugins/withEdgeToEdge"
+
     ],
     "experiments": {
       "typedRoutes": true

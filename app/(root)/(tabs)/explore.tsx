@@ -75,6 +75,7 @@ const Explore = () => {
 const handleGenerate = async () => {
   if (!inputPrompt) return Alert.alert("Error", "Please enter a prompt first.");
 
+
   if (user !== null && !user.isPremium && user.count >= 3)
      return Alert.alert(
         "Daily Limit Reached",
@@ -99,13 +100,16 @@ const handleGenerate = async () => {
       {
         text: "login",
         onPress: () => router.push("/menu"), // or any screen name
+
       },
       {
         text: "Cancel",
         style: "cancel",
       },
+
     ]
       );
+
 
   setLoading(true);
   setResults(null);
@@ -284,6 +288,7 @@ const handleGenerate = async () => {
         </View>
 
         {!results && (
+
            <View
             style={{
               backgroundColor: "#f8efff",
@@ -304,6 +309,7 @@ const handleGenerate = async () => {
       loop
       style={{ width: 200, height: 200 }}
     />
+
           </View>
         )}
 

@@ -332,17 +332,21 @@ const handleGenerate = async () => {
           <View style={styles.modalContainer}>
             <Text style={styles.modalTitle}>Search with</Text>
             <TouchableOpacity onPress={() => handleSearch("https://chat.openai.com/?q=")} style={styles.button}>
-              <Text style={styles.buttonText}>ChatGPT</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => handleSearch("https://copilot.microsoft.com/?q=")} style={styles.button}>
-              <Text style={styles.buttonText}>Copilot</Text>
-            </TouchableOpacity>
-            <TouchableOpacity  style={styles.button}>
-              <Text style={styles.buttonText}>Gemini<Text style={{fontSize: 10}}>( Coming soon)</Text></Text>
-            </TouchableOpacity>
-            <TouchableOpacity  style={styles.button}>
-              <Text style={styles.buttonText}>Grok<Text style={{fontSize: 10}}>( Coming soon)</Text></Text>
-            </TouchableOpacity>
+  <Text style={styles.buttonText}>ChatGPT</Text>
+</TouchableOpacity>
+
+<TouchableOpacity onPress={() => handleSearch("https://copilot.microsoft.com/?q=")} style={styles.button}>
+  <Text style={styles.buttonText}>Copilot</Text>
+</TouchableOpacity>
+
+<TouchableOpacity onPress={() => Linking.openURL("https://gemini.google.com/")} style={styles.button}>
+  <Text style={styles.buttonText}>Gemini</Text>
+</TouchableOpacity>
+
+<TouchableOpacity onPress={() => Linking.openURL("https://grok.com/")} style={styles.button}>
+  <Text style={styles.buttonText}>Grok</Text>
+</TouchableOpacity>
+
           </View>
         </Modal>
       </ScrollView>

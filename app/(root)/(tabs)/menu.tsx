@@ -175,7 +175,7 @@ function Menu() {
           <Image source={icons.person} style={styles.avatarLarge} />
           <Text style={styles.username}>Welcome Guest</Text>
           <View style={styles.divider} />
-          <TouchableOpacity style={styles.primaryBtn} onPress={() => router.replace('/login')}>
+          <TouchableOpacity style={styles.primaryBtn} onPress={() => router.push('/login')}>
             <Text style={styles.btnText}>Login / Signup</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.secondaryBtn} onPress={handleCheckFirstTime}>

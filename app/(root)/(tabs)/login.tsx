@@ -80,7 +80,7 @@ const orientation = useDeviceOrientation();
         await AsyncStorage.setItem("user", JSON.stringify(data));
         await AsyncStorage.setItem("lastDate", new Date().toDateString());
        // await AsyncStorage.setItem("count", "0");
-        router.replace("/explore");
+        router.push("/explore");
         Updates.reloadAsync();
       } else {
         Alert.alert("Login Failed", data.error || "Invalid credentials");
@@ -116,7 +116,7 @@ const orientation = useDeviceOrientation();
       if (response.ok) {
         await AsyncStorage.setItem("user", JSON.stringify(data));
         setSignupModalVisible(false);
-        router.replace("/explore");
+        router.push("/explore");
       } else {
         Alert.alert("Signup Failed", data.error || "Could not create account");
       }
@@ -142,9 +142,7 @@ const orientation = useDeviceOrientation();
   start={{ x: 0.2, y: 0.5 }}
   end={{ x: 0.7, y: 1.1 }}
   locations={[0, 0.3, 0.55, 0.75, 1]}
-  style={styles.container}
-
->
+  style={styles.container}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardView}

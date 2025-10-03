@@ -76,7 +76,7 @@ const orientation = useDeviceOrientation();
     } else {
       await AsyncStorage.setItem("FirstTime", "1");
       router.replace("/explore");
-      Updates.reloadAsync();
+      await Updates.reloadAsync();
     }
   };
 

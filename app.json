@@ -56,7 +56,8 @@
         }
       ],
       "./plugins/withRevenueCat",
-      "./plugins/withEdgeToEdge"
+      "./plugins/withEdgeToEdge",
+      "./withFoldableSupport.js"
     ],
     "experiments": {
       "typedRoutes": true
